@@ -147,7 +147,6 @@ Correr este comando cada vez que el backend agregue o modifique endpoints.
 
 ```
 main        → producción, protegida, requiere PR + review
-develop     → integración, requiere PR
 ```
 
 ### Convención de nombres
@@ -203,7 +202,6 @@ Los workflows de GitHub Actions se activan por path:
 
 | Profile       | Branch    | Plataforma  |
 |---------------|-----------|-------------|
-| `development` | cualquiera| internal    |
 | `preview`     | develop   | iOS + Android|
 | `production`  | main      | iOS + Android|
 
