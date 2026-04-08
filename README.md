@@ -77,7 +77,7 @@ my-app/
 ```bash
 cd mobile
 npm install
-cp .env.example .env
+cp .env.example .env             # Siempre que existan variables de entorno de ejemplo.
 npx expo start
 ```
 
@@ -124,7 +124,7 @@ Desde la raíz del monorepo:
 npm run mobile           # Inicia Expo
 npm run test:mobile      # Tests del front
 npm run test:backend     # Tests del back
-npm run lint:mobile      # Lint del front
+npm run lint:mobile      # Lint del front -> revisa la correcta implementación del lenguaje en cuestión.
 ```
 
 ---
@@ -161,9 +161,11 @@ fix/backend/<descripcion>       # fixes del back
 ### Flujo estándar
 
 ```bash
-git checkout develop
-git pull origin develop
-git checkout -b feature/mobile/login
+git checkout main                     # seleccion de rama a trabajar
+git pull origin main                  # actualizacion de cambios remotos
+git checkout -b feature/mobile/login  # creacion de nueva rama (-b)
+
+# IMPORTANTE -> Siempre crear ramas de trabajo desde el main, (git checkout main -> git checkout -b <nombre_de_rama>) para evitar dependencias entre ramas no mergeadas en el main.
 
 # ... trabajas ...
 
@@ -186,6 +188,8 @@ Seguimos [Conventional Commits](https://www.conventionalcommits.org/):
 | `refactor:`| Refactor sin cambio de funcionalidad |
 | `test:`    | Agrega o modifica tests              |
 
+Considerar estructura: prefijo(scope): descripcion del commit
+feat(backend/api): lorem
 ---
 
 ## CI/CD
