@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { Text, View, Button } from "react-native";
 
 export default function Index() {
   return (
@@ -10,6 +10,12 @@ export default function Index() {
       }}
     >
       <Text>Edit app/index.tsx to edit this screen.</Text>
+      <Button 
+        onPress={() => {
+          console.log("You tapped the button!");
+        }}
+        title="Press Me"
+      />
     </View>
   );
 }
