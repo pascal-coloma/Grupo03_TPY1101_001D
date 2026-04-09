@@ -1,7 +1,5 @@
-import LoginScreen from "./(auth)/login";
+import LoginScreen from './(auth)/login';
 
 export default function Index() {
-  return (
-    <LoginScreen />
-  );
+  return <LoginScreen />;
 }

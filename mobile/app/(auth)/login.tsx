@@ -4,7 +4,6 @@ import LoginForm from '../../components/LoginForm';
 export default function LoginScreen() {
   return (
     <View style={styles.container}>
-
       <View style={styles.logoContainer}>
         <Image
           source={require('../../assets/bootsplash/logo2x.png')}
@@ -15,7 +14,6 @@ export default function LoginScreen() {
       </View>
 
       <LoginForm />
-
     </View>
   );
 }
