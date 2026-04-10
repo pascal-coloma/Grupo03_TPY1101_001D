@@ -4,9 +4,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     backgroundColor: '#fff',
-    height: '10%',
-    flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     padding: 10,
   },
   welcome: {
@@ -52,15 +50,12 @@ const styles = StyleSheet.create({
     color: 'white',
     padding: 15,
     borderRadius: 20,
-    marginBottom: 15,
-    marginTop: 30
-    
+    marginBottom: 20,
   },
   redCardTitle: {
     color: 'white',
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'medium',
-    
   },
   dispNumb:{
     fontSize: 40,

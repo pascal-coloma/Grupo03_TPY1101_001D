@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import styles from "@/styles/globalStyles";
 
-const Dashboard = () => {
+const DispatchCard = () => {
 
     return (
         <View style={styles.container}>
@@ -19,4 +19,4 @@ const Dashboard = () => {
 }
 
 
-export default Dashboard;
+export default DispatchCard;

@@ -3,18 +3,18 @@ import { MaterialIcons } from '@expo/vector-icons';
 const AdminHeader = () => {
   return (
     <>
-      <View style={styles.container}>
-        <View style={styles.left}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>A</Text>
+      <View style={style.container}>
+        <View style={style.left}>
+          <View style={style.avatar}>
+            <Text style={style.avatarText}>A</Text>
           </View>
           <View>
-            <Text style={styles.welcome}>Bienvenido,</Text>
-            <Text style={styles.role}>Administrador</Text>
+            <Text style={style.welcome}>Bienvenido,</Text>
+            <Text style={style.role}>Administrador</Text>
           </View>
         </View>
         <View style={{ flex: 1 }} />
-        <View style={styles.right}>
+        <View style={style.right}>
           <MaterialIcons name="notifications-none" size={24} color="#000" />
           <MaterialIcons name="settings" size={24} color="#000" />
         </View>
@@ -23,7 +23,7 @@ const AdminHeader = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const style = StyleSheet.create({
   container: {
     width: '100%',
     backgroundColor: '#fff',
@@ -31,7 +31,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    marginBottom: 10
   },
   left: {
     flexDirection: 'row',
