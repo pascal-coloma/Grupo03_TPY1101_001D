@@ -12,7 +12,7 @@ export default function LoginForm() {
   function handleLogin() {
     const role = login(email, passw);
     if (role === 'admin') {
-      router.navigate('/(admin)/admin');
+      router.navigate('/(admin)/AdminDashboard');
     } else if (role === 'user') {
       // TODO: redirigir a user
     } else {

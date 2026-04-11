@@ -1,5 +1,6 @@
-import { Redirect, Stack } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function AdminLayout() {
   const { user } = useAuth();
@@ -7,5 +8,44 @@ export default function AdminLayout() {
     return <Redirect href={'/(auth)/login'} />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Tabs screenOptions={tabBarOptions}>
+      <Tabs.Screen
+        name="AdminDashboard"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => <MaterialIcons name="home" size={size} color={color} />,
+        }}
+      ></Tabs.Screen>
+      <Tabs.Screen
+        name="Despachos"
+        options={{
+          title: 'Despachos',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="airport-shuttle" size={size} color={color} />
+          ),
+        }}
+      ></Tabs.Screen>
+      <Tabs.Screen
+        name="Panel"
+        options={{
+          title: 'Panel',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="admin-panel-settings" size={size} color={color} />
+          ),
+        }}
+      ></Tabs.Screen>
+    </Tabs>
+  );
 }
+
+const tabBarOptions = {
+  headerShown: false,
+  tabBarActiveTintColor: '#E53935',
+  tabBarInactiveTintColor: '#999',
+  tabBarStyle: {
+    height: 60,
+    paddingBottom: 10,
+    backgroundColor: '#fff',
+  },
+};
