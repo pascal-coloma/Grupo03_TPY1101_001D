@@ -18,12 +18,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 24,
+    marginBottom: 10,
   },
   input: {
     borderWidth: 1,
