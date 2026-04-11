@@ -56,24 +56,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'medium',
   },
-  dispNumb:{
+  dispNumb: {
     fontSize: 40,
     fontWeight: 'bold',
     color: 'white',
-    marginLeft: 10
+    marginLeft: 10,
   },
-  redCardPills:{
+  redCardPills: {
     flexDirection: 'row',
     marginTop: 5,
-    gap: 10
-
+    gap: 10,
   },
-  pill:{
+  pill: {
     backgroundColor: '#ffffff28',
-    color:'white',
+    color: 'white',
     borderRadius: 20,
-    padding: 7
-  }
+    padding: 7,
+  },
 });
 
 export default styles;

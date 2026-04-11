@@ -15,21 +15,20 @@ const ListaDespachos = () => {
   const [activeFilter, setActiveFilter] = useState('todos');
 
   const despachosFiltrados =
-    activeFilter == 'todos' ? DESPACHOS : DESPACHOS.filter((d) => d.estado == activeFilter);
+    activeFilter === 'todos' ? DESPACHOS : DESPACHOS.filter((d) => d.estado === activeFilter);
 
   return (
     <>
       <View style={styles.container}>
         <View style={style.filtros}>
           {FILTROS.map((filtro) => (
-            <TouchableOpacity onPress={() => setActiveFilter(filtro.value)}>
+            <TouchableOpacity key={filtro.label} onPress={() => setActiveFilter(filtro.value)}>
               <View>
-                <Text style={activeFilter == filtro.value ? style.pillActive : style.pillInactive}>
+                <Text style={activeFilter === filtro.value ? style.pillActive : style.pillInactive}>
                   {filtro.label}
                 </Text>
                 {filtro.value === activeFilter && <View style={style.underline} />}
               </View>
-              
             </TouchableOpacity>
           ))}
         </View>
@@ -53,10 +52,10 @@ const style = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 5,
   },
-  divisor:{
-    height:1,
+  divisor: {
+    height: 1,
     width: '100%',
-    backgroundColor: '#5a444452'
+    backgroundColor: '#5a444452',
   },
   pillActive: {
     color: '#E53935',

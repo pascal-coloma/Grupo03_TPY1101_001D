@@ -5,12 +5,11 @@ const DESPACHOS: Despacho[] = [
   { id: '4', paciente: 'Ana Gómez', destino: 'Clínica Este', estado: 'pendiente' },
 ];
 
-
-export type Despacho ={
-    id: string;
-    paciente: string;
-    destino: string;
-    estado: 'pendiente' | 'activo' | 'completado';
-}
+export type Despacho = {
+  id: string;
+  paciente: string;
+  destino: string;
+  estado: 'pendiente' | 'activo' | 'completado';
+};
 
 export default DESPACHOS;

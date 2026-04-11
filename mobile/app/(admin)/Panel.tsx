@@ -1,13 +1,13 @@
-import { Text, View } from "react-native";
+import { Text, View } from 'react-native';
 
 const Panel = () => {
-  return( 
-  <>
-    <View>
+  return (
+    <>
+      <View>
         <Text></Text>
-    </View>
-  </>
-  )
+      </View>
+    </>
+  );
 };
 
 export default Panel;

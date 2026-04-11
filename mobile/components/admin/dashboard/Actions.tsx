@@ -58,14 +58,14 @@ const style = StyleSheet.create({
     width: '100%',
     gap: 10,
   },
-  linkStyle:{
-    flex:1
+  linkStyle: {
+    flex: 1,
   },
   dispatchCard: {
     backgroundColor: '#E53935',
     borderRadius: 20,
-    width:'100%',
-    flex:1,
+    width: '100%',
+    flex: 1,
     gap: 10,
     padding: 10,
     flexDirection: 'column',
@@ -74,8 +74,8 @@ const style = StyleSheet.create({
   attentionCard: {
     backgroundColor: '#dfacab5b',
     borderRadius: 20,
-    width:'100%',
-    flex:1,
+    width: '100%',
+    flex: 1,
     gap: 10,
     padding: 10,
     flexDirection: 'column',

@@ -17,20 +17,24 @@ export default function AdminLayout() {
           tabBarIcon: ({ color, size }) => <MaterialIcons name="home" size={size} color={color} />,
         }}
       ></Tabs.Screen>
-      <Tabs.Screen 
-      name="Despachos"
-      options={{
-        title:'Despachos',
-        tabBarIcon:({color, size}) => (<MaterialIcons name='airport-shuttle' size={size} color={color}/>)
-      }}
+      <Tabs.Screen
+        name="Despachos"
+        options={{
+          title: 'Despachos',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="airport-shuttle" size={size} color={color} />
+          ),
+        }}
       ></Tabs.Screen>
       <Tabs.Screen
-      name="Panel"
-      options={{
-        title:'Panel',
-        tabBarIcon:({color, size}) => (<MaterialIcons name='admin-panel-settings' size={size} color={color}  />)
-      }}>
-      </Tabs.Screen>
+        name="Panel"
+        options={{
+          title: 'Panel',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="admin-panel-settings" size={size} color={color} />
+          ),
+        }}
+      ></Tabs.Screen>
     </Tabs>
   );
 }
