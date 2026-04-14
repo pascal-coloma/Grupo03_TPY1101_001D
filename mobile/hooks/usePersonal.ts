@@ -9,7 +9,6 @@ const usePersonal = () => {
   ]);
   const [loading, setLoading] = useState(false);
 
-  // Cuando tengas la API, solo cambiás esto:
   // useEffect(() => {
   //   setLoading(true);
   //   fetch('/api/personal').then(r => r.json()).then(setPersonal).finally(() => setLoading(false));
