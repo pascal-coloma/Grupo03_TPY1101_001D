@@ -1,6 +1,6 @@
 import styles from '@/styles/globalStyles';
 import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import DESPACHOS from '@/constants/mockDespachos';
 import DetalleDespacho from './DetalleDespacho';
 
@@ -33,12 +33,14 @@ const ListaDespachos = () => {
           ))}
         </View>
         <View style={style.divisor}></View>
+      </View>
+      <ScrollView>
         <View>
           {despachosFiltrados.map((desp) => (
             <DetalleDespacho key={desp.id} despacho={desp} />
           ))}
         </View>
-      </View>
+      </ScrollView>
     </>
   );
 };
