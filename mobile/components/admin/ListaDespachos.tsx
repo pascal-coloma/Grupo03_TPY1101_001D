@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import DESPACHOS from '@/constants/mockDespachos';
 import DetalleDespacho from './DetalleDespacho';
-import PERSONAL from '@/constants/mockPersonal';
 const FILTROS = [
   { label: 'Todos', value: 'todos' },
   { label: 'Pendientes', value: 'pendiente' },
