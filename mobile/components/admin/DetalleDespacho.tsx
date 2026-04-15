@@ -12,6 +12,7 @@ const estadoColors: Record<Despacho['estado'], string> = {
 
 const DetalleDespacho = ({ despacho }: { despacho: Despacho }) => {
   const [modalVisible, setModalVisible] = useState(false);
+
   return (
     <>
       <View style={[styles.container]}>
@@ -36,14 +37,7 @@ const DetalleDespacho = ({ despacho }: { despacho: Despacho }) => {
             <Text style={[{ color: 'white', fontWeight: 'bold', fontSize: 16 }]}>Asignar</Text>
           </TouchableOpacity>
         </View>
-        <AsignarPersonalModal
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          onAsignar={(personal) => {
-            console.log('Asignado:', personal);
-            // acá irá la lógica de asignación
-          }}
-        />
+        <AsignarPersonalModal visible={modalVisible} onClose={() => setModalVisible(false)} />
         <View style={style.divisor}></View>
       </View>
     </>

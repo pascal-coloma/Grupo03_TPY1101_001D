@@ -1,15 +1,13 @@
 import { Modal, View, Text, TouchableOpacity, FlatList } from 'react-native';
-import { Personal } from '../../../shared/types/types';
-import usePersonal from '../../hooks/usePersonal';
+import { usePersonal } from '@/context/PersonalContext';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onAsignar: (personal: Personal) => void;
 };
 
-const AsignarPersonalModal = ({ visible, onClose, onAsignar }: Props) => {
-  const { personal } = usePersonal();
+const AsignarPersonalModal = ({ visible, onClose }: Props) => {
+  const { personal, actualizarDisponilidad } = usePersonal();
 
   return (
     <Modal visible={visible} transparent animationType="slide">
@@ -30,11 +28,11 @@ const AsignarPersonalModal = ({ visible, onClose, onAsignar }: Props) => {
 
         <FlatList
           data={personal}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(pers) => pers.id}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
-                onAsignar(item);
+                actualizarDisponilidad(item.id);
                 onClose();
               }}
               style={{
