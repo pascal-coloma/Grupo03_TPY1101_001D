@@ -3,6 +3,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Despacho } from '@/constants/mockDespachos';
 import { useState } from 'react';
 import AsignarPersonalModal from './AsignarPersonalModal';
+import { Personal } from '@/constants/mockPersonal';
+
 
 const estadoColors: Record<Despacho['estado'], string> = {
   activo: '#22c55e',
@@ -10,8 +12,25 @@ const estadoColors: Record<Despacho['estado'], string> = {
   completado: '#eab308',
 };
 
-const DetalleDespacho = ({ despacho }: { despacho: Despacho }) => {
+const DetalleDespacho = ({
+  despacho,
+  personal
+}: {
+  despacho: Despacho;
+  personal: Personal[]
+}) => {
   const [modalVisible, setModalVisible] = useState(false);
+
+  const asignacionHandler = (personal: Personal[], despacho: Despacho) => {
+    for (let i = 0; i < personal.length; i++) {
+      if(personal[i].id == despacho.personal[i].id){
+        alert('Persona no asignable');
+        return;
+      }
+    }
+    console.log(personal);
+    console.log(despacho.personal);
+  };
   return (
     <>
       <View style={[styles.container]}>
@@ -40,8 +59,7 @@ const DetalleDespacho = ({ despacho }: { despacho: Despacho }) => {
           visible={modalVisible}
           onClose={() => setModalVisible(false)}
           onAsignar={(personal) => {
-            console.log('Asignado:', personal);
-            // acá irá la lógica de asignación
+            asignacionHandler(personal, despacho);
           }}
         />
         <View style={style.divisor}></View>

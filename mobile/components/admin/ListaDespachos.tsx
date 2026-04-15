@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import DESPACHOS from '@/constants/mockDespachos';
 import DetalleDespacho from './DetalleDespacho';
-
+import PERSONAL from '@/constants/mockPersonal';
 const FILTROS = [
   { label: 'Todos', value: 'todos' },
   { label: 'Pendientes', value: 'pendiente' },
@@ -13,7 +13,6 @@ const FILTROS = [
 
 const ListaDespachos = () => {
   const [activeFilter, setActiveFilter] = useState('todos');
-
   const despachosFiltrados =
     activeFilter === 'todos' ? DESPACHOS : DESPACHOS.filter((d) => d.estado === activeFilter);
 

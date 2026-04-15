@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Personal } from '../../shared/types/types';
+import { Personal } from '@/constants/mockPersonal';
 
 const usePersonal = () => {
   const [personal, setPersonal] = useState<Personal[]>([
@@ -8,7 +8,7 @@ const usePersonal = () => {
     { id: '3', nombre: 'Cho. Rodríguez', rol: 'Chofer', disponible: false },
   ]);
   const [loading, setLoading] = useState(false);
-
+  
   // useEffect(() => {
   //   setLoading(true);
   //   fetch('/api/personal').then(r => r.json()).then(setPersonal).finally(() => setLoading(false));
