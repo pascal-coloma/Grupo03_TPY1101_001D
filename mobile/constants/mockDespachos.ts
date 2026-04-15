@@ -1,30 +1,20 @@
 import { Personal } from './mockPersonal';
 
-const DESPACHOS: Despacho[] = [
-  {
-    id: '1',
-    paciente: 'Juan Pérez',
-    destino: 'Hospital Central',
-    estado: 'pendiente',
-    personal: [],
-  },
-  { id: '2', paciente: 'María López', destino: 'Clínica Sur', estado: 'activo', personal: [] },
-  {
-    id: '3',
-    paciente: 'Carlos Ruiz',
-    destino: 'Hospital Norte',
-    estado: 'completado',
-    personal: [],
-  },
-  { id: '4', paciente: 'Ana Gómez', destino: 'Clínica Este', estado: 'pendiente', personal: [] },
-];
+const mockDespachos: Despacho[] = [];
 
 export type Despacho = {
   id: string;
-  paciente: string;
+  rutPaciente: string;
+  nombrePaciente: string;
+  edad: number;
   destino: string;
+  origen: string;
   estado: 'pendiente' | 'activo' | 'completado';
+  prioridad: 'alta' | 'media' | 'baja';
+  tipoEmergencia: string;
+  unidad: string;
   personal: Personal[];
+  observaciones?: string;
 };
 
-export default DESPACHOS;
+export default mockDespachos;

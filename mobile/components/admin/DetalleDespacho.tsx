@@ -19,11 +19,12 @@ const DetalleDespacho = ({ despacho }: { despacho: Despacho }) => {
         <Text style={[styles.title, { marginBottom: 2 }]}>DSP-{despacho.id}</Text>
         <View>
           <Text style={[styles.subtitle, { marginTop: 2 }, { fontWeight: 'bold' }]}>
-            Av. Argentina{` -> `}
+            {despacho.origen}
+            {` -> `}
             {despacho.destino}
           </Text>
           <Text style={[styles.subtitle, { fontWeight: 'bold' }]}>
-            Paciente: {despacho.paciente}
+            Paciente: {despacho.nombrePaciente}
           </Text>
           <Text style={[styles.subtitle, { fontWeight: 'bold' }]}>
             Estado:{' '}

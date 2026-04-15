@@ -2,6 +2,7 @@ import { Redirect, Tabs } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import PersonalProvider from '@/context/PersonalContext';
+import DespachosProvider from '@/context/DespachosContext';
 
 export default function AdminLayout() {
   const { user } = useAuth();
@@ -11,35 +12,44 @@ export default function AdminLayout() {
 
   return (
     <PersonalProvider>
-      <Tabs screenOptions={tabBarOptions}>
-        <Tabs.Screen
-          name="AdminDashboard"
-          options={{
-            title: 'Home',
-            tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="home" size={size} color={color} />
-            ),
-          }}
-        ></Tabs.Screen>
-        <Tabs.Screen
-          name="Despachos"
-          options={{
-            title: 'Despachos',
-            tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="airport-shuttle" size={size} color={color} />
-            ),
-          }}
-        ></Tabs.Screen>
-        <Tabs.Screen
-          name="Panel"
-          options={{
-            title: 'Panel',
-            tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="admin-panel-settings" size={size} color={color} />
-            ),
-          }}
-        ></Tabs.Screen>
-      </Tabs>
+      <DespachosProvider>
+        <Tabs screenOptions={tabBarOptions}>
+          <Tabs.Screen
+            name="AdminDashboard"
+            options={{
+              title: 'Home',
+              tabBarIcon: ({ color, size }) => (
+                <MaterialIcons name="home" size={size} color={color} />
+              ),
+            }}
+          ></Tabs.Screen>
+          <Tabs.Screen
+            name="Despachos"
+            options={{
+              title: 'Despachos',
+              tabBarIcon: ({ color, size }) => (
+                <MaterialIcons name="airport-shuttle" size={size} color={color} />
+              ),
+            }}
+          ></Tabs.Screen>
+          <Tabs.Screen
+            name="Panel"
+            options={{
+              title: 'Panel',
+              tabBarIcon: ({ color, size }) => (
+                <MaterialIcons name="admin-panel-settings" size={size} color={color} />
+              ),
+            }}
+          ></Tabs.Screen>
+          <Tabs.Screen
+            name="RegistrarPaciente"
+            options={{
+              href: null,
+              title: 'RegistrarPaciente',
+            }}
+          ></Tabs.Screen>
+        </Tabs>
+      </DespachosProvider>
     </PersonalProvider>
   );
 }
