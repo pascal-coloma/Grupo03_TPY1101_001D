@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+import hashlib
 
 class RolPersonal(models.Model):
     nombre_rol = models.CharField(max_length=50) # medico, tens, chofer, control
@@ -25,7 +26,7 @@ class Personal(AbstractUser):
 
     def __str__(self):
         return f"{self.get_full_name()} ({self.role})"
----------------------------------
+#---------------------------------
 class Paciente(models.Model):
     rut = models.CharField(max_length=12, unique=True)
     nombre_completo = models.CharField(max_length=255)
@@ -43,7 +44,7 @@ class Ambulancia(models.Model):
 
     def __str__(self):
         return f"{self.modelo} - {self.patente}"
-------------------------------------
+#------------------------------------
 class InsumoMedico(models.Model):
     nombre_insumo = models.CharField(max_length=100)
     stock_total = models.IntegerField()
@@ -78,6 +79,30 @@ class DetalleInsumoAtencion(models.Model):
     def __str__(self):
         return f"{self.insumo.nombre_insumo} en Atencion {self.atencion.id}"
 
+class Documento(models.Model):
+    # Campo donde se guarda el archivo físico
+    archivo = models.FileField(upload_to='firmas_pdf/')
+    
+    # Campo para la firma digital (hash)
+    # unique=True: Garantiza que el hash no se repita
+    # db_index=True: Crea el índice en la DB para extraerlo rápido
+    archivo_hash = models.CharField(
+        max_length=64, 
+        unique=True, 
+        db_index=True, 
+        editable=False
+    )
+
+    def save(self, *args, **kwargs):
+        if self.archivo and not self.archivo_hash:
+            sha = hashlib.sha256()
+            for chunk in self.archivo.chunks():
+                sha.update(chunk)
+            self.archivo_hash = sha.hexdigest()
+        super().save(*args, **kwargs)
+
+
+#TODO:Class de notificaciones
 # necesitamos guardar el hash y el documento crear una tabla  y en la tabla atencion debe guardar la direccion del domuento hash para luego guardarla y cargarla
 # Create your models here.
 #TODO: creacion de los modelos de la base de datos

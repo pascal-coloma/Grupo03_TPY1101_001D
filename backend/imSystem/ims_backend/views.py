@@ -3,8 +3,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate, login
 from rest_framework.permissions import BasePermission
+from django.http import HttpResponse
+from django.core import serializers
+from django.shortcuts import get_object_or_404
+import hashlib
+from load_key import GLOBAL_PRIVATE_KEY
 # Create your views here.
-
+from models import Personal, Documento
 # Permiso custom: restringe acceso a usuarios con rol control
 # Usar en vistas donde solo personal de control debe operar (como por ejemplo asignar trabajores, despachos etc)
 class ControlProfileOnly(BasePermission):
@@ -51,7 +56,17 @@ class Inventory(APIView):
 
 
 
+#TODO: API para obtener datos del personal
 
+class DataPersonal(APIView):
+    def get():
+        data_personal = Personal.objects.all()
+        data_serialized = serializers.serialize(format='json', queryset=data_personal)
+        return HttpResponse(data_serialized, content_type='application/json')
+        
+class GetDocumentFromHash(APIView):
+    def get(hash_):
+        file = get_object_or_404(Documento, hash_)
 
 #FLUJO para las firmas:
 #1. Enfermero/médico cierra ficha
@@ -62,8 +77,31 @@ class Inventory(APIView):
 
 #TODO: Creacion de la validación del TOTP (MFA)
 #TODO: Creación de la API de notificaciones
-#TODO: Creación de la API para carga de documentos
-#TODO: Creación de la API para descarga de documentos (SOLO lectura, generar un QR desde HASH)
+#TODO: Creación de la API para carga de documentos y descarga de documentos (SOLO lectura, generar un QR desde HASH)
+class DocumentsAPI(APIView):
+    def post(self,request):
+        pdf_file = request.FILES.get("archivo_pdf")
+        if not pdf_file:
+           return Response({'error':'failed to find (archivo_pdf) in json format'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        sha256_hash = hashlib.sha256()
+        try:
+            for chunk in pdf_file.chunks(64):
+                sha256_hash.update(chunk)
+            file_hash = sha256_hash.hexdigest()
+            pdf_file.seek(0)
+        except OSError as os:
+            return Response({"error":str(os)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except PermissionError as pe:
+            return Response({"error": str(pe)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        #TODO:subir firma al s3
+        #firma = GLOBAL_PRIVATE_KEY.sign(bytes.fromhex(file_hash))
+        #with open("documento_pdf.sig", "wb")as f_sig:
+        #    f_sig.write(firma)
+        return Response({"success":"success"}, status=status.HTTP_200_OK)
+
 #TODO: Creacion de la API para la gestión de claves asimetricas(PUB, PRIV)
 #TODO: Creación de la API para la modificación de los documentos
 #TODO: Creación de la API para la gestión de los Equipos de trabajo
