@@ -1,6 +1,7 @@
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import ed25519
+from pathlib import Path
 from dotenv import load_dotenv
 import os
 def get_GLOBAL_key():
@@ -11,10 +12,13 @@ def get_GLOBAL_key():
         return private_key_data
     except FileNotFoundError as fnf:
         raise RuntimeError(str(fnf))
-    
-load_dotenv("../.mikufile")
 
-pwd = os.getenv("PRIVATE_KEY")
+
+
+DIR = Path(__file__).resolve().parent
+load_dotenv(DIR / '.mikufile')
+
+pwd = os.getenv("PASSWORD_KEY")
 if not pwd:
     raise EnvironmentError("Failed to load ENV(.mikufile) file")
 private_key =  get_GLOBAL_key()
