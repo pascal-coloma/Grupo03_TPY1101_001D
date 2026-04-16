@@ -20,10 +20,10 @@ from load_key import GLOBAL_PRIVATE_KEY
 
 
 #---MODELS IMPORTS---
-from models import Personal
-from models import Documento
-from models import SuscritosAGrupo
-from models import GrupoPersonal
+from .models import Personal
+from .models import Documento
+from .models import SuscritosAGrupo
+from .models import GrupoPersonal
 # Create your views here.
 #----CLASS BASED VIEWS----
 # Permiso custom: restringe acceso a usuarios con rol control
@@ -78,8 +78,10 @@ class Inventory(APIView):
 
 class DataPersonal(APIView):
     def get(self, request):
-        data_personal = Personal.objects.filter(is_active=True)
-        return Response(list(data_personal), content_type='application/json')
+        data_personal = Personal.objects.filter(is_active=True).values(
+            'id', 'first_name', 'last_name', 'rut', 'rol__nombre_rol'
+        )
+        return Response(list(data_personal), status=status.HTTP_200_OK)
 
 #FLUJO para las firmas:
 #1. Enfermero/médico cierra ficha
