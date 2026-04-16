@@ -1,14 +1,16 @@
 # Python / Django Backend
 #enviroment and env files
 backend/env
-backend/.mikufile
-
+backend/imSystem/.mikufile
 #pycaches
 backend/imSystem/ims_backend/__pycache__/
 backend/imSystem/ims_backend/migrations/__pycache__/
 backend/imSystem/backend_config/__pycache__
+backend/imSystem/__pycache__/
 
-
+#KEYS
+backend/*.pem
+backend/*.pub
 #sqlites
 backend/imSystem/db.sqlite3
 

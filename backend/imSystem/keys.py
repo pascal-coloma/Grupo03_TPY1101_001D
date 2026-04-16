@@ -1,13 +1,18 @@
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from cryptography.hazmat.backends import default_backend
 if os.path.exists("../id_ed25519.pem"):
     raise RuntimeError("Clave ya existe, no sobreescribir")
-load_dotenv("../.mikufile")
+load_dotenv("/.mikufile")
 private_key = ed25519.Ed25519PrivateKey.generate()
 public_key = private_key.public_key()
+
+
+DIR = Path(__file__).resolve().parent
+load_dotenv(DIR / ".mikufile")
 pwd = os.getenv("PASSWORD_KEY")
 if pwd is None:
     raise ValueError("NO SE ENCONTRO EL PASSWORD_KEY EN EL .MIKUFILE")
