@@ -20,31 +20,32 @@ class GrupoPersonal(models.Model):
 class Personal(AbstractUser):
     totp_secret = models.CharField(max_length=32, blank=True, null=True)
     public_key = models.TextField(blank=True, null=True)
-
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
     rut = models.CharField(max_length=12, unique=True)
-
-    rol_Grupo = models.ForeignKey(RolPersonal, on_delete=models.PROTECT, null=True)
+    rol= models.ForeignKey(RolPersonal, on_delete=models.PROTECT, null=True)
 
     class Meta:
         indexes = [
             models.Index(fields=['rut']),
-            models.Index(fields=['rol_Grupo', 'is_active']),
         ]
 
     def __str__(self):
-        rol = self.rol_Grupo.nombre_rol if self.rol_Grupo else 'Sin rol'
+        rol = self.rol.nombre_rol if self.rol else 'Sin rol'
         return f"{self.get_full_name()} ({rol})"
 
 
 class SuscritosAGrupo(models.Model):
-    grupo = models.ForeignKey(GrupoPersonal, on_delete=models.PROTECT)
-    personal = models.ForeignKey(Personal, on_delete=models.PROTECT)
+    grupo = models.ForeignKey(GrupoPersonal, on_delete=models.PROTECT, related_name="grupo_nombre")
+    personal = models.ForeignKey(Personal, on_delete=models.PROTECT, related_name="grupo_personal")
     fecha_entrada = models.DateTimeField(auto_now_add=True)
     fecha_salida = models.DateTimeField(null= True, blank=True, help_text="Es null cuando esta activo en el grupo")
     class Meta:
         indexes = [
             models.Index(fields = [ 'grupo', 'fecha_entrada']),
-            models.Index(fields= ['grupo', 'fecha_salida'])
+            models.Index(fields= ['grupo', 'fecha_salida']),
+            models.Index(fields= ['grupo','personal'])
         ]
 
 class Paciente(models.Model):
