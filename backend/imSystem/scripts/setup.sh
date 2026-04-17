@@ -1,10 +1,12 @@
 #!/bin/bash
 
 set -e
+
 #==IF SECTION==
 if [ ! -d "/home/ubuntu/backend" ]; then
     echo "ERROR: carpeta /home/ubuntu/backend no existe"
-    exit 1
+    echo "CREATING: carpeta /home/ubuntu/backend"
+    mkdir backend
 fi
 
 if [ ! -d "/home/ubuntu/backend/imSystem" ]; then
