@@ -17,10 +17,12 @@ fi
 #==SECCION INSTALLS===
 echo "===SETING UP NGINX==="
 sudo apt install nginx -y
+echo "Ingresa la IP o DNS del servidor:"
+read SERVER_IP
 sudo tee /etc/nginx/conf.d/ims.conf > /dev/null<<EOF
 server {
     listen 80;
-    server_name <IP-OR-DNS>;
+    server_name $SERVER_IP;
 
     location / {
         proxy_pass http://127.0.0.1:8000;
