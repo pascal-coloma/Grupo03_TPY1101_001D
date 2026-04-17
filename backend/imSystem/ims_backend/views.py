@@ -5,8 +5,6 @@ from rest_framework import status
 from rest_framework.permissions import BasePermission
 from rest_framework.permissions import AllowAny
 #---DJANGO IMPORTS---
-from django.http import HttpResponse
-from django.core import serializers
 from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -75,7 +73,6 @@ class Inventory(APIView):
 
 
 #TODO: API para obtener datos del personal
-
 class DataPersonal(APIView):
     def get(self, request):
         data_personal = Personal.objects.filter(is_active=True).values(
@@ -83,41 +80,25 @@ class DataPersonal(APIView):
         )
         return Response(list(data_personal), status=status.HTTP_200_OK)
 
-#FLUJO para las firmas:
-#1. Enfermero/médico cierra ficha
-#2. Backend firma documento con CLAVE PRIVADA del usuario
-#3. Firma + documento se guardan en S3
-#4. Cualquiera descarga y verifica con CLAVE PÚBLICA del usuario
-#5. QR apunta a URL lectura → muestra doc + verificación firma
 
 #TODO: Creacion de la validación del TOTP (MFA)
-#TODO: Creación de la API de notificaciones
-#TODO: Creación de la API para carga de documentos y descarga de documentos (SOLO lectura, generar un QR desde HASH)
+#TODO: Creación de la API de notificaciones ->
+#TODO: Creación de la API para carga de documentos y descarga de documentos (SOLO lectura, generar un QR desde HASH) -> prioridad
 #AUN NO FUNCIONA
 class DocumentsAPI(APIView):
     def post(self,request):
-        pdf_file = request.FILES.get("archivo_pdf")
-        if not pdf_file:
-           return Response({'error':'failed to find (archivo_pdf) in json format'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        sha256_hash = hashlib.sha256()
+        data = request.data
         try:
-            for chunk in pdf_file.chunks(64):
-                sha256_hash.update(chunk)
-            file_hash = sha256_hash.hexdigest()
-            pdf_file.seek(0)
-        except OSError as os:
-            return Response({"error":str(os)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except PermissionError as pe:
-            return Response({"error": str(pe)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            converted_data = json.dumps(data,sort_keys=True, ensure_ascii=False)
+            sha_256 = hashlib.sha256(converted_data.encode('utf-8')).hexdigest()
+            sign = GLOBAL_PRIVATE_KEY.sign(bytes.fromhex(sha_256))
+            data["Hash"] = str(sha_256)
+            data["Firma"] = str(sign.hex())
+            #TODO: Preparar json para subir a S3
+            return Response({'success':'success'}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        #TODO:subir firma al s3
-        #firma = GLOBAL_PRIVATE_KEY.sign(bytes.fromhex(file_hash))
-        #with open("documento_pdf.sig", "wb")as f_sig:
-        #    f_sig.write(firma)
-        return Response({"success":"success"}, status=status.HTTP_200_OK)
-
 #TODO: Creación de la API para la modificación de los documentos
 
 #TODO: Creación de la API para la gestión de los Equipos de trabajo
@@ -166,6 +147,6 @@ class Grupos(APIView):
 #TODO: Creación de la API para los estados de los usuarios (en turno, disponible, fuera de servicio)
 #TODO: Creación de la API para la gestión de los datos de los pacientes(para cargar al documento)
 #TODO: Creacion de la API para despachar las atenciones
-#TODO: Creacion de la API de logs para Auditorías
+#TODO: Creacion de la API de logs para Auditorías -> para debatir
 #TODO: Creación de la API de exportación de las atenciones en formatio FHIR HL7
 #TODO: Creación de la API de tickets para recuperación de credenciales
