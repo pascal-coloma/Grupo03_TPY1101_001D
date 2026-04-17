@@ -47,29 +47,33 @@ echo "===FINISHED SETTING UP NGINX==="
 echo "===INSTALLING DEPENDENCIES AND SETTING UP GUNICORN==="
 sudo apt install python3-pip python3-venv git -y
 cd /home/ubuntu/backend
-python -m venv env
-source env/bin/activate
-pip install -r install.txt
-echo "===SETTING UP GUNICORN==="
-sudo tee /etc/systemd/system/gunicorn.service > /dev/null<< EOF
-[Unit]
-Description=Gunicorn IMS
-After=network.target
 
-[Service]
-User=ubuntu
-WorkingDirectory=/home/ubuntu/backend/imSystem
-EnvironmentFile=/home/ubuntu/backend/imSystem/.mikufile
-ExecStart=/home/ubuntu/backend/env/bin/gunicorn \\
-    backend_config.wsgi:application \\
-    --bind 127.0.0.1:8000 \\
-    --workers 3
-Restart=always
+if [ ! -d "/home/ubuntu/backend/env" ]; then
+    python3 -m venv env
+fi
+echo "===UPDATING DEPENDENCIES==="
+/home/ubuntu/backend/env/bin/pip install -r /home/ubuntu/backend/install.txt
+if [ ! -f "/etc/systemd/system/gunicorn.service" ]; then
+    echo "===SETTING UP GUNICORN==="
+        sudo tee /etc/systemd/system/gunicorn.service > /dev/null<< EOF
+        [Unit]
+        Description=Gunicorn IMS
+        After=network.target
 
-[Install]
-WantedBy=multi-user.target
+        [Service]
+        User=ubuntu
+        WorkingDirectory=/home/ubuntu/backend/imSystem
+        EnvironmentFile=/home/ubuntu/backend/imSystem/.mikufile
+        ExecStart=/home/ubuntu/backend/env/bin/gunicorn \\
+            backend_config.wsgi:application \\
+            --bind 127.0.0.1:8000 \\
+            --workers 3
+        Restart=always
+
+        [Install]
+        WantedBy=multi-user.target
 EOF
-
+fi
 echo "===STARTING GUNICORN==="
 sudo systemctl daemon-reload
 sudo systemctl enable gunicorn
