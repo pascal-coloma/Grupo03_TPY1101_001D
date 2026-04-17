@@ -16,31 +16,35 @@ fi
 
 #==SECCION INSTALLS===
 echo "===SETING UP NGINX==="
-sudo apt install nginx -y
-echo "Ingresa la IP o DNS del servidor:"
-read SERVER_IP
-sudo tee /etc/nginx/conf.d/ims.conf > /dev/null<<EOF
-server {
-    listen 80;
-    server_name $SERVER_IP;
 
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
+if [ ! -f "/usr/sbin/nginx" ];then
+    sudo apt install nginx -y
+    echo "Ingresa la IP o DNS del servidor:"
+    read SERVER_IP
+    sudo tee /etc/nginx/conf.d/ims.conf > /dev/null<<EOF
+    server {
+        listen 80;
+        server_name $SERVER_IP;
 
-    location /admin/ {
-        proxy_pass http://127.0.0.1:8000/admin;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        location / {
+            proxy_pass http://127.0.0.1:8000;
+            proxy_set_header Host \$host;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        }
+
+        location /admin/ {
+            proxy_pass http://127.0.0.1:8000/admin;
+            proxy_set_header Host \$host;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        }
     }
-}
 EOF
 
-sudo rm -f /etc/nginx/sites-enabled/default
+    sudo rm -f /etc/nginx/sites-enabled/default
+
+fi
 sudo systemctl daemon-reload
 sudo systemctl start nginx
 sudo systemctl status nginx
