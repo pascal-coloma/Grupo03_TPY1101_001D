@@ -46,7 +46,7 @@ echo "===FINISHED SETTING UP NGINX==="
 
 echo "===INSTALLING DEPENDENCIES AND SETTING UP GUNICORN==="
 sudo apt install python3-pip python3-venv git -y
-cd backend
+cd /home/ubuntu/backend
 python -m venv env
 source env/bin/activate
 pip install -r install.txt
