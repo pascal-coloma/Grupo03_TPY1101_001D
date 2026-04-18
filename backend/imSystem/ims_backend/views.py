@@ -16,26 +16,27 @@ import json
 
 #---PERSONAL MODULES IMPORTS---
 from load_key import GLOBAL_PRIVATE_KEY
-
+import utils
 
 #---MODELS IMPORTS---
 from .models import Personal
 from .models import Paciente
 from .models import SuscritosAGrupo
 from .models import GrupoPersonal
+from .models import RolPersonal
 # Create your views here.
 #----CLASS BASED VIEWS----
 # Permiso custom: restringe acceso a usuarios con rol control
 # Usar en vistas donde solo personal de control debe operar (como por ejemplo asignar trabajores, despachos etc)
 class ControlProfileOnly(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == 'control'
+        return request.user.is_authenticated and request.user.rol.nombre_rol == 'control'
 class MedicProfileOnly(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == 'medic'     
+        return request.user.is_authenticated and request.user.rol.nombre_rol == 'medic'     
 class NurseProfileOnly(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role == 'nurse'
+        return request.user.is_authenticated and request.user.rol.nombre_rol == 'nurse'
 
 class Login(APIView):
     #TODO: Implementacion de MFA con Google Authenticator (TOTP)
@@ -75,12 +76,32 @@ class Inventory(APIView):
 
 #TODO: API para obtener datos del personal
 class DataPersonal(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return[AllowAny()]
+        return [ControlProfileOnly()]
     def get(self, request):
         data_personal = Personal.objects.filter(is_active=True).values(
             'id', 'first_name', 'last_name', 'rut', 'rol__nombre_rol'
         )
         return Response(list(data_personal), status=status.HTTP_200_OK)
-
+    def post(self, request):
+        data = request.data
+        try:
+            key,totp= utils.generate_totp()
+            temp = utils.generate_password()
+            rol = get_object_or_404(RolPersonal, id=data.get("rol_id"))
+            uri = totp.provisioning_uri(name=data.get('rut'), issuer_name='IMS Sistema')
+            Personal.objects.create_user(username=data.get("rut"),
+                                         first_name=data.get("first_name"),
+                                         last_name=data.get("last_name"),
+                                         password=temp,
+                                         totp_secret =key,
+                                         rut=data.get("rut"),
+                                         rol=rol)
+            return Response({'success':'success', 'totp_uri':uri, 'password':temp}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #TODO: Creacion de la validación del TOTP (MFA)
 #TODO: Creación de la API de notificaciones -> websockets
@@ -174,10 +195,10 @@ class RegistrosPacientesAPI(APIView):
         else:
             pacientes = Paciente.objects.all().values(
                 'id', 'rut', 'nombre_completo', 'fecha_nacimiento',
-                'direccion', 'condicion_paciente', 'telefono', 'comuna','edad'
+                'direccion', 'condicion_paciente', 'telefono', 'comuna'
             )
             return Response(list(pacientes), status=status.HTTP_200_OK)
-    
+
 #TODO: Creación de la API para los estados de los usuarios (en turno, disponible, fuera de servicio)
 #TODO: Creación de la API para la gestión de los datos de los pacientes(para cargar al documento)
 #TODO: Creacion de la API para despachar las atenciones
