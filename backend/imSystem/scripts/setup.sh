@@ -33,13 +33,6 @@ if [ ! -f "/usr/sbin/nginx" ];then
             proxy_set_header X-Real-IP \$remote_addr;
             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         }
-
-        location /admin/ {
-            proxy_pass http://127.0.0.1:8000/admin;
-            proxy_set_header Host \$host;
-            proxy_set_header X-Real-IP \$remote_addr;
-            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        }
     }
 EOF
 
@@ -86,6 +79,10 @@ sudo systemctl daemon-reload
 sudo systemctl enable gunicorn
 sudo systemctl start gunicorn
 sudo systemctl status gunicorn
-
+echo "===SETTING UP FIREWALLS==="
+sudo ufw allow 80/tcp
+sudo ufw allow 8000/tcp
+sudo ufw allow 5432/tcp
+sudo ufw allow 22/tcp
 
 
