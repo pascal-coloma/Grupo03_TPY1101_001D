@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db import transaction
+from django.forms.models import model_to_dict
 #---PYTHON INCLUDES IMPORTS---
 import hashlib
 import json
@@ -19,7 +20,7 @@ from load_key import GLOBAL_PRIVATE_KEY
 
 #---MODELS IMPORTS---
 from .models import Personal
-from .models import Documento
+from .models import Paciente
 from .models import SuscritosAGrupo
 from .models import GrupoPersonal
 # Create your views here.
@@ -82,9 +83,10 @@ class DataPersonal(APIView):
 
 
 #TODO: Creacion de la validación del TOTP (MFA)
-#TODO: Creación de la API de notificaciones ->
+#TODO: Creación de la API de notificaciones -> websockets
 #TODO: Creación de la API para carga de documentos y descarga de documentos (SOLO lectura, generar un QR desde HASH) -> prioridad
 #AUN NO FUNCIONA
+#TODO: Creación de la API para la modificación de los documentos
 class DocumentsAPI(APIView):
     def post(self,request):
         data = request.data
@@ -99,7 +101,7 @@ class DocumentsAPI(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-#TODO: Creación de la API para la modificación de los documentos
+
 
 #TODO: Creación de la API para la gestión de los Equipos de trabajo
 class Grupos(APIView):
@@ -142,8 +144,40 @@ class Grupos(APIView):
 
         return Response(list(query), status=status.HTTP_200_OK)
     
-            
 
+#TODO:Creacion de la API para el registro de los pacientes
+class RegistrosPacientesAPI(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return[AllowAny()]
+        return [ControlProfileOnly()]
+
+    def post(self, request):
+        data = request.data
+        try:
+            Paciente.objects.create(rut=data.get('rut'),
+            nombre_completo=data.get('full_name'), fecha_nacimiento=data.get('date_birth'),
+            direccion=data.get('direccion'), condicion_paciente=data.get('condicion_paciente'),
+            telefono=data.get('telefono'), comuna=data.get('comuna'))
+            return Response({'success':'success'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    def get(self, request):
+        data = request.data
+        if 'id' in data:
+            try:
+                paciente = get_object_or_404(Paciente,id=data.get('id'))
+                return Response(model_to_dict(paciente)
+                                , status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'error':str(e)}, status=status.HTTP_200_OK)
+        else:
+            pacientes = Paciente.objects.all().values(
+                'id', 'rut', 'nombre_completo', 'fecha_nacimiento',
+                'direccion', 'condicion_paciente', 'telefono', 'comuna','edad'
+            )
+            return Response(list(pacientes), status=status.HTTP_200_OK)
+    
 #TODO: Creación de la API para los estados de los usuarios (en turno, disponible, fuera de servicio)
 #TODO: Creación de la API para la gestión de los datos de los pacientes(para cargar al documento)
 #TODO: Creacion de la API para despachar las atenciones
