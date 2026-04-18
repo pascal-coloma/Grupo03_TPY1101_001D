@@ -54,7 +54,8 @@ class Paciente(models.Model):
     fecha_nacimiento = models.DateField()
     direccion = models.CharField(max_length=255)
     condicion_paciente = models.TextField()
-
+    telefono = models.CharField(max_length=12, null=True, blank=True)
+    comuna = models.CharField(max_length=30, blank=True, null=True)
     @property
     def edad(self):
         hoy = date.today()
