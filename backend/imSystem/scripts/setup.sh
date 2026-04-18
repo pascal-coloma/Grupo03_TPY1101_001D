@@ -37,7 +37,7 @@ if [ ! -f "/usr/sbin/nginx" ];then
 EOF
 
     sudo rm -f /etc/nginx/sites-enabled/default
-
+    sudo rm -f /etc/nginx/sites-available/default
 fi
 sudo systemctl daemon-reload
 sudo systemctl start nginx
@@ -53,6 +53,9 @@ if [ ! -d "/home/ubuntu/backend/env" ]; then
 fi
 echo "===UPDATING DEPENDENCIES==="
 /home/ubuntu/backend/env/bin/pip install -r /home/ubuntu/backend/install.txt
+echo "===UPDATING MIGRATIONS==="
+/home/ubuntu/backend/env/bin/python3 /home/ubuntu/backend/imSystem/manage.py makemigrations
+/home/ubuntu/backend/env/bin/python3 /home/ubuntu/backend/imSystem/manage.py migrate
 if [ ! -f "/etc/systemd/system/gunicorn.service" ]; then
     echo "===SETTING UP GUNICORN==="
         sudo tee /etc/systemd/system/gunicorn.service > /dev/null<< EOF
