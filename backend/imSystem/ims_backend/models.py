@@ -19,10 +19,7 @@ class GrupoPersonal(models.Model):
 
 class Personal(AbstractUser):
     totp_secret = models.CharField(max_length=32, blank=True, null=True)
-    public_key = models.TextField(blank=True, null=True)
-    @property
-    def full_name(self):
-        return f"{self.first_name} {self.last_name}"
+    full_name = models.CharField(max_length=200, blank=False, null=False)
     rut = models.CharField(max_length=12, unique=True)
     rol= models.ForeignKey(RolPersonal, on_delete=models.PROTECT, null=True)
 
