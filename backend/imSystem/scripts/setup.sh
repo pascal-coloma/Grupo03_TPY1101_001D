@@ -13,10 +13,11 @@ if [ ! -d "/home/ubuntu/backend/imSystem" ]; then
     echo "ERROR: carpeta /home/ubuntu/backend/imSystem no existe"
     exit 1
 fi
-
+#==SECCION INSTALLS===
+echo "===UPDATING REPOSITORIES==="
+sudo apt update
 #==SECCION INSTALLS===
 echo "===SETING UP NGINX==="
-
 if [ ! -f "/usr/sbin/nginx" ];then
     sudo apt install nginx -y
     echo "Ingresa la IP o DNS del servidor:"
