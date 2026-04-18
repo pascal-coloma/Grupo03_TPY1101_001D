@@ -4,19 +4,19 @@ from cryptography.hazmat.primitives.asymmetric import ed25519
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+
+DIR = Path(__file__).resolve().parent
+load_dotenv(DIR / '.mikufile')
+
 def get_GLOBAL_key():
     try:
 
-        with open("../id_ed25519.pem", 'rb') as key_file:
+        with open(DIR / 'id_ed25519.pem', 'rb') as key_file:
             private_key_data = key_file.read()
         return private_key_data
     except FileNotFoundError as fnf:
         raise RuntimeError(str(fnf))
 
-
-
-DIR = Path(__file__).resolve().parent
-load_dotenv(DIR / '.mikufile')
 
 pwd = os.getenv("PASSWORD_KEY")
 if not pwd:

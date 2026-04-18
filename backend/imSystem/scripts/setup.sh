@@ -53,9 +53,6 @@ if [ ! -d "/home/ubuntu/backend/env" ]; then
 fi
 echo "===UPDATING DEPENDENCIES==="
 /home/ubuntu/backend/env/bin/pip install -r /home/ubuntu/backend/install.txt
-echo "===UPDATING MIGRATIONS==="
-/home/ubuntu/backend/env/bin/python3 /home/ubuntu/backend/imSystem/manage.py makemigrations
-/home/ubuntu/backend/env/bin/python3 /home/ubuntu/backend/imSystem/manage.py migrate
 if [ ! -f "/etc/systemd/system/gunicorn.service" ]; then
     echo "===SETTING UP GUNICORN==="
         sudo tee /etc/systemd/system/gunicorn.service > /dev/null<< EOF
@@ -82,10 +79,3 @@ sudo systemctl daemon-reload
 sudo systemctl enable gunicorn
 sudo systemctl start gunicorn
 sudo systemctl status gunicorn
-echo "===SETTING UP FIREWALLS==="
-sudo ufw allow 80/tcp
-sudo ufw allow 8000/tcp
-sudo ufw allow 5432/tcp
-sudo ufw allow 22/tcp
-
-
