@@ -16,8 +16,7 @@ import json
 
 #---PERSONAL MODULES IMPORTS---
 from load_key import GLOBAL_PRIVATE_KEY
-import utils
-
+from . import utils
 #---MODELS IMPORTS---
 from .models import Personal
 from .models import Paciente
