@@ -12,10 +12,10 @@ backend/imSystem/*.pem
 backend/imSystem/*.pub
 #sqlites
 backend/imSystem/db.sqlite3
-
 #static files
 backend/staticfiles/
-
+#tests
+backend/imSystem/seed.py
 ########FIN BACKEND###########
 
 # Node / Expo
