@@ -108,11 +108,21 @@ class Despacho(models.Model):
     descripcion_llamado = models.TextField(blank=True)
 
     ambulancia = models.ForeignKey(Ambulancia, on_delete=models.PROTECT, null=True, blank=True)
+    creado_por = models.ForeignKey(
+        Personal,
+        on_delete=models.PROTECT,
+        related_name='despachos_creados',
+        help_text="Usuario de control que creó el despacho",
+        null=True,
+        blank=True
+    )
     asignado_por = models.ForeignKey(
         Personal,
         on_delete=models.PROTECT,
         related_name='despachos_asignados',
-        help_text="Usuario de control que asignó el despacho"
+        help_text="Usuario de control que asignó el despacho",
+        null=True,
+        blank=True
     )
 
     estado = models.CharField(max_length=30, choices=ESTADOS, default='recibido')
