@@ -5,5 +5,6 @@ urlpatterns = [
     path("api/allpersonal/",DataPersonal.as_view(), name="allpersonal"),
     path("api/registroPacientes/", RegistrosPacientesAPI.as_view(),name="RegistroPacientesAPI"),
     path("api/suscribirAgrupo/",Grupos.as_view(),name="Grupos"),
+    path("api/suscribirAgrupo/AddMember/", AddMemberToGroup.as_view(), name="AddMemberToGroup"),
 ]
 
