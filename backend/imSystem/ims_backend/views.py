@@ -163,7 +163,20 @@ class Grupos(APIView):
         )
 
         return Response(list(query), status=status.HTTP_200_OK)
-    
+class AddMemberToGroup(APIView):
+    permission_classes = [ControlProfileOnly]
+    def post(self, request):
+        data = request.data
+        try:
+            persona = get_object_or_404(Personal, id=data.get('p_id'))
+            grupo_to_update = get_object_or_404(GrupoPersonal, id=data.get('group_id'))
+            with transaction.atomic():
+                SuscritosAGrupo.objects.create(grupo=grupo_to_update, 
+                                               personal=persona, 
+                                               fecha_salida=None)
+            return Response({'success':'success'}, status=status.HTTP_201_CREATED)
+        except Exception as ta:
+            return Response({'error':str(ta)}, status=status.HTTP_400_BAD_REQUEST)
 
 #TODO:Creacion de la API para el registro de los pacientes
 class RegistrosPacientesAPI(APIView):
