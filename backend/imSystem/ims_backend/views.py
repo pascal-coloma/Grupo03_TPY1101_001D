@@ -23,6 +23,9 @@ from .models import Paciente
 from .models import SuscritosAGrupo
 from .models import GrupoPersonal
 from .models import RolPersonal
+from .models import Despacho
+from .models import Ambulancia
+from .models import DespachoPersonal
 # Create your views here.
 #----CLASS BASED VIEWS----
 # Permiso custom: restringe acceso a usuarios con rol control
@@ -103,7 +106,7 @@ class DataPersonal(APIView):
             return Response({'error':str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #TODO: Creacion de la validación del TOTP (MFA)
-#TODO: Creación de la API de notificaciones -> websockets
+#TODO: Creación de la API de notificaciones -> SSE
 #TODO: Creación de la API para carga de documentos y descarga de documentos (SOLO lectura, generar un QR desde HASH) -> prioridad
 #AUN NO FUNCIONA
 #TODO: Creación de la API para la modificación de los documentos
@@ -214,6 +217,34 @@ class RegistrosPacientesAPI(APIView):
 #TODO: Creación de la API para los estados de los usuarios (en turno, disponible, fuera de servicio)
 #TODO: Creación de la API para la gestión de los datos de los pacientes(para cargar al documento)
 #TODO: Creacion de la API para despachar las atenciones
+class CreateDespacho(APIView):
+    permission_classes = [ControlProfileOnly]
+    def post(self, request):
+        data = request.data
+        try:
+            with transaction.atomic():
+                Despacho.objects.create( direccion_origen=data.get('d_o'),
+                direccion_destino=data.get('d_d'),descripcion_llamado=data.get('d_llamado'),
+                creado_por=request.user,estado='recibido')
+            return Response({'success':'success'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)
+class AsignarDespacho(APIView):
+    permission_classes = [ControlProfileOnly]
+    def patch(self, request):
+        data = request.data
+        try:
+            amb = get_object_or_404(Ambulancia, id=data.get('amb_id'))
+            with transaction.atomic():
+                Despacho.objects.filter(id=data.get('d_id')).update(
+                    fecha_asignacion=timezone.now(),asignado_por=request.user,
+                    ambulancia=amb, estado='asignado')
+                despacho=get_object_or_404(Despacho, id=data.get('d_id'))
+                grupo_asign=get_object_or_404(GrupoPersonal, id=data.get('group_id'))
+                DespachoPersonal.objects.create(despacho=despacho, grupo=grupo_asign)
+                return Response({'success':'success'},status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error':str(e)}, status=status.HTTP_400_BAD_REQUEST)
 #TODO: Creacion de la API de logs para Auditorías -> para debatir
 #TODO: Creación de la API de exportación de las atenciones en formatio FHIR HL7
 #TODO: Creación de la API de tickets para recuperación de credenciales
