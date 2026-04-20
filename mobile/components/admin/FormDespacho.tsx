@@ -21,6 +21,7 @@ const FormDespacho = ({ control, errors }: FormDespachoProps) => {
         rules={{ required: true }}
         render={({ field: { onChange, value } }) => (
           <>
+          <Text style={style.title}>Detalles del Despacho</Text>
             <Text style={style.label}>Prioridad</Text>
             <View style={style.pickerContainer}>
               <Picker selectedValue={value} onValueChange={onChange}>
@@ -102,7 +103,7 @@ const FormDespacho = ({ control, errors }: FormDespachoProps) => {
         rules={{ required: true }}
         render={({ field: { onChange, value } }) => (
           <>
-            <Text style={style.label}>Equipo asignado</Text>
+            <Text style={style.title}>Asignar Equipo</Text>
             {personal
               .filter((p) => p.disponible)
               .map((p) => {
@@ -158,7 +159,7 @@ const style = StyleSheet.create({
   },
   textArea: {
     height: 100,
-    textAlignVertical: 'top', // el texto parte desde arriba en Android
+    textAlignVertical: 'top', 
   },
   checkItem: {
     borderWidth: 1,
@@ -170,6 +171,11 @@ const style = StyleSheet.create({
   checkItemSeleccionado: {
     backgroundColor: '#e60303',
     borderColor: '#e60303',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5
   },
 });
 

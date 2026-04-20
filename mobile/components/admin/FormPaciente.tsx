@@ -56,6 +56,7 @@ const FormPaciente = ({ control, errors }: FormPacienteProps) => {
           }}
           render={({ field: { onChange, onBlur, value } }) => (
             <>
+              <Text style={style.title}>Datos del Paciente</Text>
               <Text style={style.label}>Primer Nombre</Text>{' '}
               <TextInput
                 placeholder="Ingrese primer nombre"
@@ -256,6 +257,15 @@ const style = StyleSheet.create({
     marginBottom: 4,
     color: '#333',
   },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5
+  },
+  divisor:{
+    height: 5,
+    backgroundColor: 'grey'
+  }
 });
 
 export default FormPaciente;
