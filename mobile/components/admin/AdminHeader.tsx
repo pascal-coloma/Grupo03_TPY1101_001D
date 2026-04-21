@@ -4,7 +4,6 @@ import NotificationDrawer from '../NotificationDrawer';
 import { useState } from 'react';
 
 const AdminHeader = () => {
-  
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   return (
@@ -24,7 +23,10 @@ const AdminHeader = () => {
           <TouchableOpacity onPress={() => setDrawerVisible(true)}>
             <MaterialIcons name="notifications-none" size={24} color="#000" />
           </TouchableOpacity>
-          <NotificationDrawer visible={drawerVisible} onClose={() => setDrawerVisible(false)}></NotificationDrawer>
+          <NotificationDrawer
+            visible={drawerVisible}
+            onClose={() => setDrawerVisible(false)}
+          ></NotificationDrawer>
           <MaterialIcons name="settings" size={24} color="#000" />
         </View>
       </View>

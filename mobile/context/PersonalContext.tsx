@@ -13,17 +13,17 @@ const PersonalProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const fetchPersonal = async () => {
-     try {
-      const response = await fetch('http://52.91.220.207/ims/api/allpersonal/');
-      if (!response.ok){
-        throw new Error(`Response status: ${response.status}`)
+      try {
+        const response = await fetch('http://52.91.220.207/ims/api/allpersonal/');
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+        const personal = await response.json();
+        setPersonal(personal);
+      } catch (error: any) {
+        console.error(error.message);
       }
-      const personal = await response.json();
-      setPersonal(personal);
-     } catch (error : any) {
-      console.error(error.message)
-     }
-    }
+    };
     fetchPersonal();
   }, []);
 

@@ -1,5 +1,5 @@
 export type Notificacion = {
-  tipo: 'despacho' | 'reasignacion' | 'alerta_stock' | 'sistema' ;
+  tipo: 'despacho' | 'reasignacion' | 'alerta_stock' | 'sistema';
   titulo: string;
   mensaje: string;
 };
