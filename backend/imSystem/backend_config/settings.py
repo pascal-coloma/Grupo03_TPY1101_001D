@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -71,6 +73,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend_config.wsgi.application'
 
+#CORS
+CORS_ALLOW_ALL_ORIGINS=False
+CORS_ALLOWED_ORIGINS=[
+"http://localhost:8081",
+"http://127.0.0.1:8081",
+]
+CORS_ALLOW_CREDENTIALS=True
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8081",
+]
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
