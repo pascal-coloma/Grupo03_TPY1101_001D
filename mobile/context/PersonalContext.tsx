@@ -19,7 +19,6 @@ const PersonalProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(`Response status: ${response.status}`)
       }
       const personal = await response.json();
-      console.log(personal);
       setPersonal(personal);
      } catch (error : any) {
       console.error(error.message)
