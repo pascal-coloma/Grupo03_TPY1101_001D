@@ -8,6 +8,8 @@ export type Insumo = {
   ubicacion: 'bodega' | 'ambulancia';
 };
 
+// inventario por ambulancia o general de ambulancias??
+
 const mockInsumos: Insumo[] = [
   {
     id: '1',

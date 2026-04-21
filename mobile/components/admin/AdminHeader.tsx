@@ -1,6 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import NotificationDrawer from '../NotificationDrawer';
+import { useState } from 'react';
+
 const AdminHeader = () => {
+  
+  const [drawerVisible, setDrawerVisible] = useState(false);
+
   return (
     <>
       <View style={style.container}>
@@ -15,7 +21,10 @@ const AdminHeader = () => {
         </View>
         <View style={{ flex: 1 }} />
         <View style={style.right}>
-          <MaterialIcons name="notifications-none" size={24} color="#000" />
+          <TouchableOpacity onPress={() => setDrawerVisible(true)}>
+            <MaterialIcons name="notifications-none" size={24} color="#000" />
+          </TouchableOpacity>
+          <NotificationDrawer visible={drawerVisible} onClose={() => setDrawerVisible(false)}></NotificationDrawer>
           <MaterialIcons name="settings" size={24} color="#000" />
         </View>
       </View>

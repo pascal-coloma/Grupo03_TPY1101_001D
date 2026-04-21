@@ -11,7 +11,7 @@ const PersonalContext = createContext<PersonalContextType | null>(null);
 const PersonalProvider = ({ children }: { children: ReactNode }) => {
   const [personal, setPersonal] = useState<Personal[]>(PERSONAL);
 
-  /*useEffect(() => {
+  useEffect(() => {
     const fetchPersonal = async () => {
      try {
       const response = await fetch('http://52.91.220.207/ims/api/allpersonal/');
@@ -26,10 +26,10 @@ const PersonalProvider = ({ children }: { children: ReactNode }) => {
      }
     }
     fetchPersonal();
-  }, [])*/
+  }, []);
 
   function actualizarDisponilidad(id: string): void {
-    setPersonal((prev) => prev.map((p) => (p.id === id ? { ...p, disponible: false } : p)));
+    setPersonal((prev) => prev.map((p) => (p.id === id ? { ...p, is_active: false } : p)));
   }
   return (
     <PersonalContext.Provider value={{ personal, actualizarDisponilidad }}>

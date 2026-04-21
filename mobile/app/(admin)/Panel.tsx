@@ -11,7 +11,7 @@ const Panel = () => {
   const { personal } = usePersonal();
   const totalDespachos = despachos.length;
   const movilesActivos = mockAmbulancias.filter((p) => p.disponible).length;
-  const personalActivo = personal.filter((p) => p.disponible).length;
+  const personalActivo = personal.filter((p) => p.is_active).length;
 
   return (
     <>
