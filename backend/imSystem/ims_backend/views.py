@@ -84,7 +84,7 @@ class DataPersonal(APIView):
         return [ControlProfileOnly()]
     def get(self, request):
         data_personal = Personal.objects.filter(is_active=True).values(
-            'id', 'first_name', 'last_name', 'rut', 'rol__nombre_rol'
+            'id', 'first_name', 'last_name', 'rut', 'rol__nombre_rol','is_active'
         )
         return Response(list(data_personal), status=status.HTTP_200_OK)
     def post(self, request):
