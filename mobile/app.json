@@ -28,7 +28,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/bootsplash/logo@3x.png",
+          "image": "./assets/bootsplash/logo3x.png",
           "imageWidth": 400,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -41,6 +41,9 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "ios": {
+      "bundleIdentifier": "com.anonymous.ims"
     }
   }
 }

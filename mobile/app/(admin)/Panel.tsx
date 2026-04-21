@@ -24,66 +24,64 @@ const Panel = () => {
           <Text style={styles.title}>Panel de Control</Text>
         </View>
       </View>
-      <View style={[{ flexDirection: 'row', gap: 10, padding: 10 }]}>
-        <View style={style.statCard}>
-          <Text style={style.cardTitle}>Despachos hoy</Text>
-          <Text style={style.cardSubtitle}>{totalDespachos}</Text>
+      <ScrollView contentContainerStyle={{ gap: 10, padding: 10, backgroundColor: 'white' }}>
+
+        <View style={style.contenedorCards}>
+          <View style={style.statCard}>
+            <Text style={style.cardTitle}>Despachos hoy</Text>
+            <Text style={style.cardSubtitle}>{totalDespachos}</Text>
+          </View>
+          <View style={[style.statCard, { borderLeftColor: '#E53935' }]}>
+            <Text style={style.cardTitle}>Moviles</Text>
+            <Text style={style.cardSubtitle}>{movilesActivos}</Text>
+          </View>
         </View>
-        <View style={style.statCard}>
-          <Text style={style.cardTitle}>Moviles disponibles</Text>
-          <Text style={style.cardSubtitle}>{movilesActivos}</Text>
+        <View style={style.contenedorCards}>
+          <View style={style.personalCard}>
+            <Text style={style.cardTitle}>Personal activo</Text>
+            <Text style={style.cardSubtitle}>{personalActivo}</Text>
+          </View>
         </View>
-      </View>
-      <View style={[{ flexDirection: 'row', gap: 10, padding: 10 }]}>
-        <View style={[style.personalCard]}>
-          <Text style={style.cardTitle}>Personal activo</Text>
-          <Text style={style.cardSubtitle}>{personalActivo}</Text>
-        </View>
-        <View style={[style.personalCard]}>
-          <Text style={style.cardTitle}>Personal activo</Text>
-          <Text style={style.cardSubtitle}>{personalActivo}</Text>
-        </View>
-      </View>
-      <Text style={style.title}>Acciones Rapidas</Text>
-      <View style={[{ flexDirection: 'row', gap: 10, padding: 10 }]}>
-        <Link href={'/(admin)/RegistrarPaciente'} style={style.linkStyle}>
+        <Text style={[style.title, { backgroundColor: 'white' }]}>Acciones Rapidas</Text>
+        <Link href={'/(admin)/RegistrarPaciente'}>
           <View style={style.patientCard}>
             <MaterialIcons name="person" size={40} color="#372121" />
             <View style={{ padding: 5 }}>
               <Text style={[style.cardTitle, { color: '#372121' }]}>Registrar Paciente</Text>
-              <Text>Nuevo llamado - crear despacho </Text>
+              <Text>Nuevo llamado - crear despacho</Text>
             </View>
           </View>
         </Link>
-      </View>
-      <View style={[{ flexDirection: 'row', gap: 10, padding: 10 }]}>
-        <Link href={'/(admin)/Despachos'} style={style.linkStyle}>
+        <Link href={'/(admin)/Despachos'}>
           <View style={style.patientCard}>
             <MaterialIcons name="airport-shuttle" size={40} color="#372121" />
             <View style={{ padding: 5 }}>
               <Text style={[style.cardTitle, { color: '#372121' }]}>Ver Despachos</Text>
-              <Text>Lista de despachos </Text>
+              <Text>Lista de despachos</Text>
             </View>
           </View>
         </Link>
-      </View>
-      <View style={[{ flexDirection: 'row', gap: 10, padding: 10 }]}>
-        <Link href={'/(admin)/Despachos'} style={style.linkStyle}>
+        <Link href={'/(admin)/Inventario'}>
           <View style={style.patientCard}>
             <MaterialIcons name="inventory" size={40} color="#372121" />
             <View style={{ padding: 5 }}>
               <Text style={[style.cardTitle, { color: '#372121' }]}>Inventario</Text>
-              <Text>Gestion de Inventario</Text>
+              <Text>Gestión de Inventario</Text>
             </View>
           </View>
         </Link>
-      </View>
-      <Text style={style.title}>Despachos Activos</Text>
+      </ScrollView>
     </>
   );
 };
 
 const style = StyleSheet.create({
+  contenedorCards: {
+    flexDirection: 'row',
+    gap: 10,
+    padding: 10,
+    backgroundColor: 'white'
+  },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -114,18 +112,18 @@ const style = StyleSheet.create({
     padding: 10,
   },
   statCard: {
-    backgroundColor: '#db2421',
+    backgroundColor: '#e62a2af3',
     borderRadius: 20,
     flex: 1,
     gap: 10,
     padding: 10,
   },
   personalCard: {
-    backgroundColor: '#ddcfcf',
+    backgroundColor: '#87a4cacb',
     borderRadius: 20,
-    flex: 1,
     gap: 10,
     padding: 10,
+    width: '50%'
   },
   attentionCard: {
     backgroundColor: '#dfacab5b',
@@ -138,7 +136,7 @@ const style = StyleSheet.create({
     alignItems: 'flex-start',
   },
   patientCard: {
-    backgroundColor: '#dfacab5b',
+    backgroundColor: '#ddcdcd5b',
     borderRadius: 20,
     gap: 10,
     width: '100%',

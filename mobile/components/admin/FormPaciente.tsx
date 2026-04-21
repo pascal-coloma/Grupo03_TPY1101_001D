@@ -57,7 +57,7 @@ const FormPaciente = ({ control, errors }: FormPacienteProps) => {
           render={({ field: { onChange, onBlur, value } }) => (
             <>
               <Text style={style.title}>Datos del Paciente</Text>
-              <Text style={style.label}>Primer Nombre</Text>{' '}
+              <Text style={style.label}>Primer Nombre</Text>
               <TextInput
                 placeholder="Ingrese primer nombre"
                 onBlur={onBlur}

@@ -25,7 +25,7 @@ const FormDespacho = ({ control, errors }: FormDespachoProps) => {
             <Text style={style.label}>Prioridad</Text>
             <View style={style.pickerContainer}>
               <Picker selectedValue={value} onValueChange={onChange}>
-                <Picker.Item label="Seleccione prioridad" value="" />
+                <Picker.Item label="Seleccione prioridad" value="" enabled={false} />
                 <Picker.Item label="Alta" value="alta" />
                 <Picker.Item label="Media" value="media" />
                 <Picker.Item label="Baja" value="baja" />
@@ -44,7 +44,7 @@ const FormDespacho = ({ control, errors }: FormDespachoProps) => {
             <Text style={style.label}>Categoría de emergencia</Text>
             <View style={style.pickerContainer}>
               <Picker selectedValue={value} onValueChange={onChange}>
-                <Picker.Item label="Seleccione categoría" value="" />
+                <Picker.Item label="Seleccione categoría" value="" enabled={false} />
                 {CATEGORIAS_EMERGENCIA.map((cat) => (
                   <Picker.Item key={cat.value} label={cat.label} value={cat.value} />
                 ))}
@@ -63,7 +63,7 @@ const FormDespacho = ({ control, errors }: FormDespachoProps) => {
             <Text style={style.label}>Unidad</Text>
             <View style={style.pickerContainer}>
               <Picker selectedValue={value} onValueChange={onChange}>
-                <Picker.Item label="Seleccione unidad" value="" />
+                <Picker.Item label="Seleccione unidad" value="" enabled={false} />
                 {mockAmbulancias
                   .filter((a) => a.disponible)
                   .map((a) => (

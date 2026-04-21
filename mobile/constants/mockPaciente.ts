@@ -1,7 +1,7 @@
 export type Paciente = {
   rut: string;
   pnombre: string;
-  snombre: string | '';
+  snombre: string | undefined;
   apaterno: string;
   amaterno: string;
   edad: number;

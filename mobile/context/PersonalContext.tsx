@@ -1,5 +1,5 @@
 import PERSONAL, { Personal } from '@/constants/mockPersonal';
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 type PersonalContextType = {
   personal: Personal[];
@@ -11,17 +11,27 @@ const PersonalContext = createContext<PersonalContextType | null>(null);
 const PersonalProvider = ({ children }: { children: ReactNode }) => {
   const [personal, setPersonal] = useState<Personal[]>(PERSONAL);
 
-  function actualizarDisponilidad(id: string): void {
-    const personalActualizado = personal.map((p) => {
-      if (p.id == id) {
-        return { ...p, disponible: false };
-      } else {
-        return p;
+  /*useEffect(() => {
+    const fetchPersonal = async () => {
+     try {
+      const response = await fetch('http://52.91.220.207/ims/api/allpersonal/');
+      if (!response.ok){
+        throw new Error(`Response status: ${response.status}`)
       }
-    });
-    setPersonal(personalActualizado);
-  }
+      const personal = await response.json();
+      console.log(personal);
+      setPersonal(personal);
+     } catch (error : any) {
+      console.error(error.message)
+     }
+    }
+    fetchPersonal();
+  }, [])*/
 
+
+  function actualizarDisponilidad(id: string): void {
+    setPersonal(prev => prev.map(p => p.id === id ? {...p, disponible: false} : p));
+  };
   return (
     <PersonalContext.Provider value={{ personal, actualizarDisponilidad }}>
       {children}

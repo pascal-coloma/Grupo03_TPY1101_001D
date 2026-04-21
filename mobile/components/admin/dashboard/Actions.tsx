@@ -20,10 +20,10 @@ const Actions = () => {
           </Link>
           <Link href={'/(admin)/Panel'} style={style.linkStyle}>
             <View style={style.attentionCard}>
-              <MaterialIcons name="admin-panel-settings" size={50} color="#372121" />
+              <MaterialIcons name="admin-panel-settings" size={50} color="#130b0b" />
               <View>
-                <Text style={[style.cardTitle, { color: '#372121' }]}>Panel de Control</Text>
-                <Text style={[style.cardSubtitle, { color: '#c17575' }]}>
+                <Text style={[style.cardTitle, { color: '#130b0b' }]}>Panel de Control</Text>
+                <Text style={[style.cardSubtitle, { color: '#130b0b' }]}>
                   Inventario, personal y despachos
                 </Text>
               </View>
@@ -72,7 +72,7 @@ const style = StyleSheet.create({
     alignItems: 'flex-start',
   },
   attentionCard: {
-    backgroundColor: '#dfacab5b',
+    backgroundColor: '#87a4cacb',
     borderRadius: 20,
     width: '100%',
     flex: 1,

@@ -8,13 +8,19 @@ import { Despacho } from '@/constants/mockDespachos';
 import PERSONAL from '@/constants/mockPersonal';
 import { useDespachos } from '@/context/DespachosContext';
 import DEFAULT_VALUES from '@/constants/defaultValues';
+import { Paciente } from '@/constants/mockPaciente';
+import { usePacientes } from '@/context/PacienteContext';
+import { usePersonal } from '@/context/PersonalContext';
 
 const RegistrarPaciente = () => {
   const { agregarDespacho, despachos } = useDespachos();
+  const { agregarPaciente, pacientes } = usePacientes();
+  const {actualizarDisponilidad, personal} = usePersonal();
 
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormCompleta>({
     defaultValues: DEFAULT_VALUES,
@@ -33,14 +39,28 @@ const RegistrarPaciente = () => {
       prioridad: data.prioridad as Despacho['prioridad'],
       tipoEmergencia: data.tipoEmergencia,
       unidad: data.unidad,
-      personal: PERSONAL.filter((p) => data.equipoAsignado.includes(p.id)),
+      personal: personal.filter((p) => data.equipoAsignado.includes(p.id)),
       observaciones: data.observaciones,
     };
-
+    data.equipoAsignado.forEach(id => actualizarDisponilidad(id)
+    );
     agregarDespacho(nuevoDespacho);
+
+    const nuevoPaciente: Paciente = {
+      rut: data.rut,
+      pnombre: data.primerNombre,
+      snombre: data.segundoNombre,
+      apaterno: data.apellidoPaterno,
+      amaterno: data.apellidoMaterno,
+      edad: data.edad,
+      telefono: data.telefono
+    };
+    agregarPaciente(nuevoPaciente);
+    console.log(pacientes);
+    reset();
+
     router.back();
   };
-
   return (
     <ScrollView>
       <FormPaciente control={control} errors={errors} />

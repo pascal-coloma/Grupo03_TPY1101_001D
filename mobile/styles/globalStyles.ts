@@ -18,6 +18,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: 'bold',
+    marginBottom: 3
   },
   subtitle: {
     fontSize: 16,
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   redCard: {
-    backgroundColor: '#E53935',
+    backgroundColor: '#e62a2af3',
     width: '100%',
     color: 'white',
     padding: 15,
