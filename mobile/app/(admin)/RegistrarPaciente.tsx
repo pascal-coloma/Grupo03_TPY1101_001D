@@ -15,7 +15,7 @@ import { usePersonal } from '@/context/PersonalContext';
 const RegistrarPaciente = () => {
   const { agregarDespacho, despachos } = useDespachos();
   const { agregarPaciente, pacientes } = usePacientes();
-  const {actualizarDisponilidad, personal} = usePersonal();
+  const { actualizarDisponilidad, personal } = usePersonal();
 
   const {
     control,
@@ -42,8 +42,7 @@ const RegistrarPaciente = () => {
       personal: personal.filter((p) => data.equipoAsignado.includes(p.id)),
       observaciones: data.observaciones,
     };
-    data.equipoAsignado.forEach(id => actualizarDisponilidad(id)
-    );
+    data.equipoAsignado.forEach((id) => actualizarDisponilidad(id));
     agregarDespacho(nuevoDespacho);
 
     const nuevoPaciente: Paciente = {
@@ -53,7 +52,7 @@ const RegistrarPaciente = () => {
       apaterno: data.apellidoPaterno,
       amaterno: data.apellidoMaterno,
       edad: data.edad,
-      telefono: data.telefono
+      telefono: data.telefono,
     };
     agregarPaciente(nuevoPaciente);
     console.log(pacientes);

@@ -37,7 +37,12 @@ const DetalleDespachoScreen = () => {
             <MaterialIcons name="arrow-back" size={22} color="#000" />
           </TouchableOpacity>
           <Text style={styles.title}>DSP-{despacho.id}</Text>
-          <View style={[style.estadoPill, { backgroundColor: estadoColors[despacho.estado], alignItems: 'center'}]}>
+          <View
+            style={[
+              style.estadoPill,
+              { backgroundColor: estadoColors[despacho.estado], alignItems: 'center' },
+            ]}
+          >
             <Text style={style.estadoPillText}>
               {despacho.estado[0].toUpperCase() + despacho.estado.slice(1)}
             </Text>
@@ -104,7 +109,12 @@ const DetalleDespachoScreen = () => {
                 <Text style={style.personalNombre}>{p.nombre}</Text>
                 <Text style={style.personalRol}>{p.rol}</Text>
               </View>
-              <View style={[style.disponibilidadPill, { backgroundColor: p.disponible ? '#dcfce7' : '#fee2e2' }]}>
+              <View
+                style={[
+                  style.disponibilidadPill,
+                  { backgroundColor: p.disponible ? '#dcfce7' : '#fee2e2' },
+                ]}
+              >
                 <Text style={{ color: p.disponible ? '#16a34a' : '#dc2626', fontSize: 12 }}>
                   {p.disponible ? 'Disponible' : 'Ocupado'}
                 </Text>
@@ -113,7 +123,7 @@ const DetalleDespachoScreen = () => {
           ))
         )}
       </View>
-      <Stack.Screen options={{headerShown: false}} />
+      <Stack.Screen options={{ headerShown: false }} />
     </ScrollView>
   );
 };

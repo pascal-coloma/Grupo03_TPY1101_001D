@@ -260,12 +260,12 @@ const style = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 5
+    marginBottom: 5,
   },
-  divisor:{
+  divisor: {
     height: 5,
-    backgroundColor: 'grey'
-  }
+    backgroundColor: 'grey',
+  },
 });
 
 export default FormPaciente;

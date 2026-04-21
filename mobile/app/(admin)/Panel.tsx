@@ -1,9 +1,8 @@
 import styles from '@/styles/globalStyles';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { mockAmbulancias } from '@/constants/mockAmbulancia';
-import { ScrollView } from 'react-native';
 import { useDespachos } from '@/context/DespachosContext';
 import { usePersonal } from '@/context/PersonalContext';
 
@@ -25,7 +24,6 @@ const Panel = () => {
         </View>
       </View>
       <ScrollView contentContainerStyle={{ gap: 10, padding: 10, backgroundColor: 'white' }}>
-
         <View style={style.contenedorCards}>
           <View style={style.statCard}>
             <Text style={style.cardTitle}>Despachos hoy</Text>
@@ -80,7 +78,7 @@ const style = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     padding: 10,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
   title: {
     fontSize: 22,
@@ -123,7 +121,7 @@ const style = StyleSheet.create({
     borderRadius: 20,
     gap: 10,
     padding: 10,
-    width: '50%'
+    width: '50%',
   },
   attentionCard: {
     backgroundColor: '#dfacab5b',

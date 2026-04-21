@@ -28,10 +28,9 @@ const PersonalProvider = ({ children }: { children: ReactNode }) => {
     fetchPersonal();
   }, [])*/
 
-
   function actualizarDisponilidad(id: string): void {
-    setPersonal(prev => prev.map(p => p.id === id ? {...p, disponible: false} : p));
-  };
+    setPersonal((prev) => prev.map((p) => (p.id === id ? { ...p, disponible: false } : p)));
+  }
   return (
     <PersonalContext.Provider value={{ personal, actualizarDisponilidad }}>
       {children}

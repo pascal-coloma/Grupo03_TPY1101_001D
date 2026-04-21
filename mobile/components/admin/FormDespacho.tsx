@@ -21,7 +21,7 @@ const FormDespacho = ({ control, errors }: FormDespachoProps) => {
         rules={{ required: true }}
         render={({ field: { onChange, value } }) => (
           <>
-          <Text style={style.title}>Detalles del Despacho</Text>
+            <Text style={style.title}>Detalles del Despacho</Text>
             <Text style={style.label}>Prioridad</Text>
             <View style={style.pickerContainer}>
               <Picker selectedValue={value} onValueChange={onChange}>
@@ -159,7 +159,7 @@ const style = StyleSheet.create({
   },
   textArea: {
     height: 100,
-    textAlignVertical: 'top', 
+    textAlignVertical: 'top',
   },
   checkItem: {
     borderWidth: 1,
@@ -175,7 +175,7 @@ const style = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 5
+    marginBottom: 5,
   },
 });
 
