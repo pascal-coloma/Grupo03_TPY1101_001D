@@ -106,17 +106,17 @@ const DetalleDespachoScreen = () => {
           despacho.personal.map((p) => (
             <View key={p.id} style={style.personalItem}>
               <View>
-                <Text style={style.personalNombre}>{p.nombre}</Text>
-                <Text style={style.personalRol}>{p.rol}</Text>
+                <Text style={style.personalNombre}>{p.first_name}</Text>
+                <Text style={style.personalRol}>{p.rol__nombre_rol}</Text>
               </View>
               <View
                 style={[
                   style.disponibilidadPill,
-                  { backgroundColor: p.disponible ? '#dcfce7' : '#fee2e2' },
+                  { backgroundColor: p.is_active ? '#dcfce7' : '#fee2e2' },
                 ]}
               >
-                <Text style={{ color: p.disponible ? '#16a34a' : '#dc2626', fontSize: 12 }}>
-                  {p.disponible ? 'Disponible' : 'Ocupado'}
+                <Text style={{ color: p.is_active ? '#16a34a' : '#dc2626', fontSize: 12 }}>
+                  {p.is_active ? 'Disponible' : 'Ocupado'}
                 </Text>
               </View>
             </View>

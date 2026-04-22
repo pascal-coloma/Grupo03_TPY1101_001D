@@ -6,11 +6,13 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { router } from 'expo-router';
 import { Despacho } from '@/constants/mockDespachos';
 import PERSONAL from '@/constants/mockPersonal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDespachos } from '@/context/DespachosContext';
 import DEFAULT_VALUES from '@/constants/defaultValues';
 import { Paciente } from '@/constants/mockPaciente';
 import { usePacientes } from '@/context/PacienteContext';
 import { usePersonal } from '@/context/PersonalContext';
+import { generatePDF } from '@/constants/generatePDF';
 
 const RegistrarPaciente = () => {
   const { agregarDespacho, despachos } = useDespachos();
@@ -26,6 +28,24 @@ const RegistrarPaciente = () => {
     defaultValues: DEFAULT_VALUES,
   });
 
+  const storeData = async (data: FormCompleta) => {
+    try {
+      const content = JSON.stringify(data);
+      await AsyncStorage.setItem('key', content);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const checkStorage = async () => {
+    const raw = await AsyncStorage.getItem('key');
+    console.log('stored:', raw ? JSON.parse(raw) : null);
+  };
+
+  const handlerPdf = async (data: FormCompleta) => {
+    generatePDF(data);
+
+  }
 
   const onSubmit = (data: FormCompleta) => {
     const nuevoDespacho: Despacho = {
@@ -56,8 +76,9 @@ const RegistrarPaciente = () => {
       telefono: data.telefono,
     };
     agregarPaciente(nuevoPaciente);
-    //RNFS.writeFile(filePath, JSON.stringify(data));
-    console.log(pacientes);
+    storeData(data);
+    generatePDF(data);
+    checkStorage();
     reset();
 
     router.back();
@@ -67,6 +88,9 @@ const RegistrarPaciente = () => {
       <FormPaciente control={control} errors={errors} />
       <FormDespacho control={control} errors={errors} />
       <View style={style.rowBotones}>
+        <TouchableOpacity style={style.btnCancelar} onPress={() => handlerPdf}>
+          <Text>Generar PDF</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={style.btnCancelar} onPress={() => router.back()}>
           <Text style={style.btnText}>Cancelar</Text>
         </TouchableOpacity>

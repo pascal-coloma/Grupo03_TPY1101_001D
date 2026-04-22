@@ -1,6 +1,6 @@
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { FormCompleta } from '../../../shared/types/types';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Touchable } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { CATEGORIAS_EMERGENCIA, mockAmbulancias } from '@/constants/mockAmbulancia';
 import styles from '@/styles/globalStyles';
@@ -132,6 +132,7 @@ const FormDespacho = ({ control, errors }: FormDespachoProps) => {
         )}
       />
       {errors.equipoAsignado && <Text style={style.campoRequerido}>Campo requerido</Text>}
+      
     </View>
   );
 };
