@@ -26,6 +26,7 @@ const RegistrarPaciente = () => {
     defaultValues: DEFAULT_VALUES,
   });
 
+
   const onSubmit = (data: FormCompleta) => {
     const nuevoDespacho: Despacho = {
       id: String(despachos.length + 1),
@@ -55,6 +56,7 @@ const RegistrarPaciente = () => {
       telefono: data.telefono,
     };
     agregarPaciente(nuevoPaciente);
+    //RNFS.writeFile(filePath, JSON.stringify(data));
     console.log(pacientes);
     reset();
 

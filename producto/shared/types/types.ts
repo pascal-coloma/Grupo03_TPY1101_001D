@@ -10,7 +10,7 @@ export type FormCompleta = {
   direccionDestino: string;
   prioridad: string;
   tipoEmergencia: string;
-equipoAsignado: string[];
+  equipoAsignado: string[];
   estadoUnidad: string;
   observaciones?: string;
   unidad: string;
