@@ -14,7 +14,7 @@ export default function LoginForm() {
     if (role === 'admin') {
       router.navigate('/(admin)/AdminDashboard');
     } else if (role === 'user') {
-      // TODO: redirigir a user
+      router.navigate('/(user)/UserDashboard');
     } else {
       alert('Credenciales incorrectas');
     }

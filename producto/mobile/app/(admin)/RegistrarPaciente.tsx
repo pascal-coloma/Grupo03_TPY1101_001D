@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
 import { Despacho } from '@/constants/mockDespachos';
-import PERSONAL from '@/constants/mockPersonal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDespachos } from '@/context/DespachosContext';
 import DEFAULT_VALUES from '@/constants/defaultValues';
@@ -44,8 +43,7 @@ const RegistrarPaciente = () => {
 
   const handlerPdf = async (data: FormCompleta) => {
     generatePDF(data);
-
-  }
+  };
 
   const onSubmit = (data: FormCompleta) => {
     const nuevoDespacho: Despacho = {

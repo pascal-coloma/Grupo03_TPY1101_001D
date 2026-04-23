@@ -131,7 +131,7 @@ export const generatePDF = async (data: FormCompleta) => {
           <div class="field full">
             <label>Equipo asignado</label>
             <div class="equipo-list">
-              ${data.equipoAsignado.map(e => `<span class="equipo-item">${e}</span>`).join('')}
+              ${data.equipoAsignado.map((e) => `<span class="equipo-item">${e}</span>`).join('')}
             </div>
           </div>
         </div>

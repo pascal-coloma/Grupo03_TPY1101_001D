@@ -132,7 +132,6 @@ const FormDespacho = ({ control, errors }: FormDespachoProps) => {
         )}
       />
       {errors.equipoAsignado && <Text style={style.campoRequerido}>Campo requerido</Text>}
-      
     </View>
   );
 };
