@@ -51,29 +51,26 @@ const RegistrarAtencion = () => {
   return (
     <>
       <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-        <FormPaciente control={control} errors={errors} />
-        <ControlVitales control={control} errors={errors} />
-        <PreInforme control={control} errors={errors} />
-        <Cronologia control={control} errors={errors} />
-      </ScrollView>
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+          <FormPaciente control={control} errors={errors} />
+          <ControlVitales control={control} errors={errors} />
+          <PreInforme control={control} errors={errors} />
+          <Cronologia control={control} errors={errors} />
+        </ScrollView>
 
-      <View style={local.botonesContainer}>
-        <TouchableOpacity
-          style={[styles.button, local.botonLimpiar]}
-          onPress={() => reset()}
-        >
-          <Text style={local.botonLimpiarTexto}>Limpiar</Text>
-        </TouchableOpacity>
+        <View style={local.botonesContainer}>
+          <TouchableOpacity style={[styles.button, local.botonLimpiar]} onPress={() => reset()}>
+            <Text style={local.botonLimpiarTexto}>Limpiar</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, local.botonEnviar]}
-          onPress={handleSubmit(onSubmit)}
-        >
-          <Text style={styles.buttonText}>Registrar atención</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, local.botonEnviar]}
+            onPress={handleSubmit(onSubmit)}
+          >
+            <Text style={styles.buttonText}>Registrar atención</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
     </>
   );
 };

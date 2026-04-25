@@ -20,8 +20,8 @@ const ListaPacientes = () => {
           <TouchableOpacity onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={22} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.title}>Pacientes</Text>        
-          </View>
+          <Text style={styles.title}>Pacientes</Text>
+        </View>
 
         <TextInput
           style={local.buscador}

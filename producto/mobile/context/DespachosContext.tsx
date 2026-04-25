@@ -25,18 +25,24 @@ const DespachosProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const actualizarDespacho = (id: string, atencion: Partial<Despacho>) => {
-    setDespachos(prev =>
-      prev.map(d => d.id === id ? { ...d, ...atencion } : d)
-    );
+    setDespachos((prev) => prev.map((d) => (d.id === id ? { ...d, ...atencion } : d)));
   };
 
   const seleccionarDespacho = (id: string) => {
-    const despacho = despachos.find(d => d.id === id);
+    const despacho = despachos.find((d) => d.id === id);
     setDespachoActivo(despacho ?? null);
   };
 
   return (
-    <DespachosContext.Provider value={{ despachos, despachoActivo, agregarDespacho, actualizarDespacho, seleccionarDespacho }}>
+    <DespachosContext.Provider
+      value={{
+        despachos,
+        despachoActivo,
+        agregarDespacho,
+        actualizarDespacho,
+        seleccionarDespacho,
+      }}
+    >
       {children}
     </DespachosContext.Provider>
   );

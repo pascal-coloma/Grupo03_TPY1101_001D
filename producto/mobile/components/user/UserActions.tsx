@@ -29,9 +29,7 @@ const UserActions = () => {
               <MaterialIcons name="person" size={50} color="#f8f6f6" />
               <View>
                 <Text style={[style.cardTitle]}>Registrar Atencion</Text>
-                <Text style={[style.cardSubtitle]}>
-                  Ficha prehospitalaria
-                </Text>
+                <Text style={[style.cardSubtitle]}>Ficha prehospitalaria</Text>
               </View>
             </View>
           </Link>
