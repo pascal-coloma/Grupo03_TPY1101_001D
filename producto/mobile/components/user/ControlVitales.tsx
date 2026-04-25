@@ -238,7 +238,7 @@ function ControlVitales({ control, errors }: ControlVitalesProps) {
       fr: 0,
       satO2: 0,
       fio2: 0,
-      temperatura: 0,
+      temperatura: 0.0,
       hgt: 0,
       gcs: 0,
       eva: 0,

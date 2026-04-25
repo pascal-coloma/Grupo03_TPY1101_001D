@@ -3,6 +3,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
+const CARD_COLORS = {
+  despachos: '#E53935',
+  atencion: '#1565C0',
+  pacientes: '#1976D2',
+};
+
 const UserActions = () => {
   return (
     <>
@@ -10,7 +16,7 @@ const UserActions = () => {
         <Text style={style.title}>Acciones Rápidas</Text>
         <View style={style.cardsRow}>
           <Link href={'/(user)/Despachos'} style={style.linkStyle}>
-            <View style={style.dispatchCard}>
+            <View style={[style.card, { backgroundColor: CARD_COLORS.despachos }]}>
               <MaterialIcons name="airport-shuttle" size={50} color="white" />
               <View>
                 <Text style={style.cardTitle}>Despachos</Text>
@@ -19,13 +25,22 @@ const UserActions = () => {
             </View>
           </Link>
           <Link href={'/(user)/RegistrarAtencion'} style={style.linkStyle}>
-            <View style={style.attentionCard}>
-              <MaterialIcons name="person" size={50} color="#130b0b" />
+            <View style={[style.card, { backgroundColor: CARD_COLORS.atencion }]}>
+              <MaterialIcons name="person" size={50} color="#f8f6f6" />
               <View>
-                <Text style={[style.cardTitle, { color: '#130b0b' }]}>Registrar Atencion</Text>
-                <Text style={[style.cardSubtitle, { color: '#130b0b' }]}>
+                <Text style={[style.cardTitle]}>Registrar Atencion</Text>
+                <Text style={[style.cardSubtitle]}>
                   Ficha prehospitalaria
                 </Text>
+              </View>
+            </View>
+          </Link>
+          <Link href={'/(user)/ListaPacientes'} style={style.linkStyleFull}>
+            <View style={[style.card, { backgroundColor: CARD_COLORS.pacientes }]}>
+              <MaterialIcons name="people" size={50} color="white" />
+              <View>
+                <Text style={style.cardTitle}>Pacientes</Text>
+                <Text style={style.cardSubtitle}>Historial de pacientes</Text>
               </View>
             </View>
           </Link>
@@ -45,24 +60,23 @@ const style = StyleSheet.create({
   },
   cardTitle: {
     color: 'white',
-    fontWeight: 'medium',
+    fontWeight: 'bold',
     fontSize: 18,
   },
   cardSubtitle: {
-    color: 'white',
-    fontWeight: 'light',
+    color: 'rgba(255,255,255,0.75)',
     fontSize: 10,
   },
   cardsRow: {
     flexDirection: 'row',
     width: '100%',
     gap: 10,
+    flexWrap: 'wrap',
   },
   linkStyle: {
     flex: 1,
   },
-  dispatchCard: {
-    backgroundColor: '#E53935',
+  card: {
     borderRadius: 20,
     width: '100%',
     flex: 1,
@@ -71,14 +85,7 @@ const style = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'flex-start',
   },
-  attentionCard: {
-    backgroundColor: '#87a4cacb',
-    borderRadius: 20,
-    width: '100%',
-    flex: 1,
-    gap: 10,
-    padding: 10,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
+  linkStyleFull: {
+    width: '50%',
   },
 });

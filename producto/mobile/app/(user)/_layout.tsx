@@ -22,7 +22,7 @@ const UserLayout = () => {
                 <MaterialIcons name="home" size={size} color={color} />
               ),
             }}
-          ></Tabs.Screen>
+          />
           <Tabs.Screen
             name="Despachos"
             options={{
@@ -31,7 +31,7 @@ const UserLayout = () => {
                 <MaterialIcons name="airport-shuttle" size={size} color={color} />
               ),
             }}
-          ></Tabs.Screen>
+          />
           <Tabs.Screen
             name="RegistrarAtencion"
             options={{
@@ -40,7 +40,16 @@ const UserLayout = () => {
                 <MaterialIcons name="person" size={size} color={color} />
               ),
             }}
-          ></Tabs.Screen>
+          />
+          <Tabs.Screen
+            name="ListaPacientes"
+            options={{
+              title: 'Pacientes',
+              tabBarIcon: ({ color, size }) => (
+                <MaterialIcons name="people" size={size} color={color} />
+              ),
+            }}
+          />
         </Tabs>
       </PacienteProvider>
     </DespachosProvider>

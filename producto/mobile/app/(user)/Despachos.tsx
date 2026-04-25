@@ -1,4 +1,4 @@
-import ListaDespachos from '@/components/admin/ListaDespachos';
+import ListaDespachosUser from '@/components/user/ListaDespachos';
 import styles from '@/styles/globalStyles';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -16,7 +16,7 @@ const Despachos = () => {
           <Text style={styles.title}>Despachos</Text>
         </View>
       </View>
-      <ListaDespachos />
+      <ListaDespachosUser />
     </>
   );
 };
