@@ -1,0 +1,44 @@
+from django.urls import path
+from rest_framework.routers import DefaultRouter
+from .views import *
+
+#VIEWSETS
+from ims_backend.toolbox.Paginators.logPaginator import LogViewSet
+from ims_backend.toolbox.Paginators.despachosPaginator import DespachoViewSet
+router = DefaultRouter()
+#VIEWSET REGISTER
+router.register(r'api/logs', LogViewSet, basename='logs')
+router.register(r'api/despachos/all', DespachoViewSet, basename='despachos-all')
+
+
+urlpatterns = [
+    path("api/auth/", Authenticate.as_view(), name="Authenticate"),
+    path("api/login/", Login.as_view(), name="Login"),
+    path("api/logout/", Logout.as_view(), name="Logout"),
+    path("api/token/post/", TokenPOST.as_view(), name="TokenPOST"),
+    path("api/personal/", GetPersonal.as_view(), name="DataPersonal"),
+    path("api/personal/add/",AddPersonal.as_view(), name="AddPersonal"),
+    path("api/personal/delete/", DeletePersonal.as_view(), name="DeletePersonal"),
+    path("api/pacientes/add/", RegistrosPacientesAPI.as_view(), name="RegistroPacientesAPI"),
+    path("api/pacientes/get/", GetPacientes.as_view(), name="GetPacientes"),
+    path("api/grupo/", GruposObtener.as_view(), name="GruposObtener"),
+    path("api/grupo/crear/", GrupoCrear.as_view(), name="GrupoCrear"),
+    path("api/grupo/suscribir/", AddMemberToGroup.as_view(), name="AddMemberToGroup"),
+    path("api/grupo/desuscribir/", GrupoRemoverMiembro.as_view(), name="GrupoRemoverMiembro"),
+    path("api/despachos/get/", DespachoASolicitudUsuario.as_view(), name="DespachoUsuarioAPI"),    
+    path("api/despachos/add/", CreateDespacho.as_view(), name="CreateDespacho"),
+    path("api/despachos/asignar/", AsignarDespacho.as_view(), name="AsignarDespacho"),
+    path("api/despachos/programar/",ProgramarDespacho.as_view(), name="ProgramarDespacho"),
+    path("api/ambulancias/", AmbulanciaAPI.as_view(), name="AmbulanciaAPI"),
+    path("api/ambulancias/estados/",  CambiarEstadoAmbulancia.as_view(), name=" CambiarEstadoAmbulancia"),
+    path("api/atenciones/", RetornarAtencionAPI.as_view(), name="AtencionAPI"),
+    path("api/atenciones/add/", RegistroAtencionAPI.as_view(), name="RegistroAtencionAPI"),
+    path("api/inv/", GetInsumosAPI.as_view(), name="InsumosAPI"),
+    path("api/inv/add/", AddInsumoAPI.as_view(), name="AddInsumoAPI"),
+    path("api/inv/move/", MoveInsumoAPI.as_view(), name="MoveInsumoAPI"),
+    path("api/inv/update/", UpdateStockAPI.as_view(), name="UpdateStockAPI"),
+    path("api/fhir/", FHIR.as_view(), name="FHIR"),
+    path("api/documentos/verificar/", VerificarDocumentoAPI.as_view(), name="VerificarDocumento")
+]
+#ADD VIEWSET TO URLPATTERNS
+urlpatterns += router.urls
