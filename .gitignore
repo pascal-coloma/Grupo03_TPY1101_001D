@@ -107,3 +107,8 @@ target/
 Cargo.lock
 *.png
 producto/backend/imSystem_Backend
+
+# excepcion: *.json y *.png arriba son reglas globales pensadas para backend,
+# pero bloquean package.json/app.json/assets del proyecto mobile
+!producto/mobile/**/*.json
+!producto/mobile/**/*.png

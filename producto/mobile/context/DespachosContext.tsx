@@ -1,0 +1,334 @@
+import mockDespachos, { Despacho } from '@/data/mock/mockDespachos';
+import { AMBULANCIA_ESTADO } from '@/data/constants/ambulanciaEstados';
+import { OFFLINE_MODE } from '@/data/constants/defaultValues';
+import { fetchConSesion, useAuth } from '@/context/AuthContext';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  ReactNode,
+  useRef,
+} from 'react';
+import { FormCompleta } from '@/data/types';
+import { useNotifications } from './NotificationContext';
+
+const mapearControl = (d: any): Despacho => ({
+  id: String(d.id),
+  direccionOrigen: d.direccion_origen,
+  direccionDestino: d.direccion_destino,
+  descripcionLlamado: d.descripcion_llamado,
+  estado: d.estado === 'asignado' ? 'activo' : d.estado,
+  fechaLlamado: d.fecha_llamado,
+  fechaAsignacion: d.fecha_asignacion,
+  paciente: d.paciente ?? undefined,
+  rutPaciente: d.paciente?.rut ?? undefined,
+  personalIds: d.personal ? d.personal.map((p: any) => String(p.personal__id)) : [],
+  ambulancia: d.ambulancia_id
+    ? {
+        id: String(d.ambulancia_id),
+        patente: '',
+        estado: AMBULANCIA_ESTADO.DISPONIBLE,
+      }
+    : undefined,
+});
+
+const mapearWorker = (d: any): Despacho => ({
+  id: String(d.id),
+  direccionOrigen: d.direccionOrigen,
+  direccionDestino: d.direccionDestino,
+  descripcionLlamado: d.descripcionLlamado,
+  estado: d.estado === 'asignado' ? 'activo' : d.estado,
+  fechaLlamado: d.fechaLlamado,
+  personalIds: d.personalIds ?? [],
+  grupoNombre: d.grupoNombre ?? undefined,
+  paciente: d.paciente ?? undefined,
+  rutPaciente: d.paciente?.rut ?? undefined,
+  ambulancia: d.ambulancia
+    ? {
+        id: String(d.ambulancia.id),
+        patente: d.ambulancia.patente ?? '',
+        estado: d.ambulancia.estado ?? 'disponible',
+      }
+    : undefined,
+});
+
+type DespachosContextType = {
+  despachos: Despacho[];
+  despachoActivo: Despacho | null;
+  agregarDespacho: (data: FormCompleta) => Promise<void>;
+  actualizarDespacho: (id: string, despacho: Partial<Despacho>) => void;
+  seleccionarDespacho: (id: string) => void;
+  despachosPorPersonal: (personalId: string) => Despacho[];
+  setDespachoActivoPorUsuario: (personalId: string) => void;
+  limpiarDespachoActivo: () => void;
+  loading: boolean;
+  loadingMore: boolean;
+  tieneMas: boolean;
+  cargarMas: () => Promise<void>;
+  error: string | null;
+  fetchDespachos: () => Promise<void>;
+  recargar: () => void;
+};
+
+const DespachosContext = createContext<DespachosContextType | null>(null);
+
+export const useDespachos = () => {
+  const context = useContext(DespachosContext);
+  if (!context) throw new Error('useDespachos debe usarse dentro de DespachosProvider');
+  return context;
+};
+
+const DespachosProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
+  const [despachos, setDespachos] = useState<Despacho[]>([]);
+  const [despachoActivo, setDespachoActivo] = useState<Despacho | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const recargar = useCallback(() => setRefreshKey((prev) => prev + 1), []);
+  const { lastMessageId } = useNotifications();
+  const primerMensajeRef = useRef(true);
+
+  useEffect(() => {
+    if (user) fetchDespachos();
+  }, [refreshKey]);
+
+  // Refresca al recibir un push (ej. emergencia, asignación, finalizado).
+  // Se ignora el valor inicial para no duplicar el fetch del efecto anterior.
+  useEffect(() => {
+    if (primerMensajeRef.current) {
+      primerMensajeRef.current = false;
+      return;
+    }
+    if (user && lastMessageId) fetchDespachos();
+  }, [lastMessageId]);
+
+  const fetchDespachos = useCallback(async () => {
+    if (OFFLINE_MODE) {
+      setDespachos(mockDespachos);
+      setDespachoActivo(mockDespachos.find((d) => d.estado === 'activo') ?? null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const esControl = user?.role === 'control';
+      const endpoint = esControl ? '/ims/api/despachos/all/' : '/ims/api/despachos/get/';
+
+      const response = await fetchConSesion(endpoint);
+      if (response.status === 404) {
+        // Sin grupo asignado todavía: no es un error, simplemente no hay despachos que mostrar.
+        setDespachos([]);
+        setNextCursor(null);
+        return;
+      }
+      if (!response.ok) throw new Error(`Error ${response.status}`);
+      const data = await response.json();
+
+      if (esControl) {
+        setDespachos(data.results.map(mapearControl));
+        setNextCursor(data.next);
+      } else {
+        setDespachos(data.map(mapearWorker));
+        setNextCursor(null);
+      }
+    } catch (e: any) {
+      console.error('Error fetching despachos:', e);
+      setError(e.message ?? 'Error desconocido');
+      setDespachos([]);
+      setNextCursor(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.role, refreshKey]);
+
+  const cargarMas = useCallback(async () => {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      // nextCursor llega como URL absoluta (DRF la construye con build_absolute_uri);
+      // fetchConSesion espera solo el path, así que se descarta el origin.
+      const path = nextCursor.replace(/^https?:\/\/[^/]+/, '');
+      const response = await fetchConSesion(path);
+      if (!response.ok) throw new Error(`Error ${response.status}`);
+      const data = await response.json();
+      setDespachos((prev) => [...prev, ...data.results.map(mapearControl)]);
+      setNextCursor(data.next);
+    } catch (e: any) {
+      console.error('Error cargando más despachos:', e);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [nextCursor, loadingMore]);
+
+  const agregarDespacho = useCallback(
+    async (data: FormCompleta): Promise<void> => {
+      console.log('agregarDespacho llamado');
+      console.log('data:', JSON.stringify(data, null, 2));
+      const rutLimpio = data.rut.replace(/\./g, '');
+      console.log('rutLimpio:', rutLimpio);
+
+      setLoading(true);
+      setError(null);
+      try {
+        const buscarResp = await fetchConSesion(
+          `/ims/api/pacientes/get/?rut=${encodeURIComponent(rutLimpio)}`,
+        );
+
+        if (!buscarResp.ok) {
+          const payloadPaciente = {
+            rut: rutLimpio,
+            nombre_completo: [
+              data.primerNombre,
+              data.segundoNombre ?? '',
+              data.apellidoPaterno,
+              data.apellidoMaterno,
+            ]
+              .filter(Boolean)
+              .join(' '),
+            fecha_nacimiento: data.fechaNacimiento.split('-').reverse().join('-'),
+            direccion: data.direccionOrigen,
+            condicion_paciente: data.condicionPaciente,
+            telefono: (data.telefono ?? '').replace(/\s/g, '').slice(0, 12),
+            comuna: data.comuna ?? '',
+          };
+          console.log('Paso 0 - paciente no existe, creando...');
+          const crearResp = await fetchConSesion('/ims/api/pacientes/add/', {
+            method: 'POST',
+            body: JSON.stringify(payloadPaciente),
+          });
+          if (!crearResp.ok) {
+            const errorText = await crearResp.text().catch(() => 'no body');
+            console.log('Error creando paciente:', errorText);
+            throw new Error(`Error creando paciente: ${crearResp.status}`);
+          }
+          console.log('Paso 0 - paciente creado');
+        } else {
+          console.log('Paso 0 - paciente existente encontrado');
+        }
+        const despachoResp = await fetchConSesion('/ims/api/despachos/add/', {
+          method: 'POST',
+          body: JSON.stringify({
+            direccion_origen: data.direccionOrigen,
+            direccion_destino: data.direccionDestino,
+            descripcion_llamado: data.descripcionLlamado,
+            paciente_rut: rutLimpio,
+          }),
+        });
+        if (!despachoResp.ok) {
+          const errorText = await despachoResp.text().catch(() => 'no body');
+          console.log('Error despacho body:', errorText);
+          throw new Error(`Error creando despacho: ${despachoResp.status}`);
+        }
+        const despachoData = await despachoResp.json();
+        console.log('Paso 1 - despacho:', despachoData);
+
+        // Paso 2 — asignar
+        const asignarResp = await fetchConSesion('/ims/api/despachos/asignar/', {
+          method: 'PATCH',
+          body: JSON.stringify({
+            amb_id: Number(data.unidad),
+            despacho_id: despachoData.despacho.id,
+            grupo_id: Number(data.grupoAsignado),
+            is_emergency: data.isEmergency ?? false,
+          }),
+        });
+        if (!asignarResp.ok) {
+          const errorText = await asignarResp.text().catch(() => 'no body');
+          console.log('Error asignar body:', errorText);
+          throw new Error(`Error asignando despacho: ${asignarResp.status}`);
+        }
+        console.log('Paso 2 - asignado');
+
+        try {
+          await fetchDespachos();
+        } catch {
+          console.warn('fetchDespachos falló pero el despacho fue creado');
+        }
+      } catch (e: any) {
+        console.error('Error en agregarDespacho:', e);
+        setError(e.message ?? 'Error desconocido');
+        throw e;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchDespachos],
+  );
+
+  const actualizarDespacho = useCallback((id: string, despacho: Partial<Despacho>) => {
+    setDespachos((prev) => prev.map((d) => (d.id === id ? { ...d, ...despacho } : d)));
+  }, []);
+
+  const seleccionarDespacho = useCallback(
+    (id: string) => {
+      setDespachoActivo(despachos.find((d) => d.id === id) ?? null);
+    },
+    [despachos],
+  );
+
+  const esDespachoActivo = (d: Despacho) => d.estado === 'activo' || d.estado === 'emergencia';
+
+  const despachosPorPersonal = useCallback(
+    (personalId: string) =>
+      despachos.filter((d) => d.personalIds?.includes(personalId) && esDespachoActivo(d)),
+    [despachos],
+  );
+
+  const setDespachoActivoPorUsuario = useCallback(
+    (personalId: string) => {
+      setDespachoActivo(
+        despachos.find((d) => d.personalIds?.includes(personalId) && esDespachoActivo(d)) ?? null,
+      );
+    },
+    [despachos],
+  );
+
+  const limpiarDespachoActivo = useCallback(() => setDespachoActivo(null), []);
+
+  const value = useMemo(
+    () => ({
+      despachos,
+      despachoActivo,
+      agregarDespacho,
+      actualizarDespacho,
+      seleccionarDespacho,
+      despachosPorPersonal,
+      setDespachoActivoPorUsuario,
+      limpiarDespachoActivo,
+      loading,
+      loadingMore,
+      tieneMas: nextCursor !== null,
+      cargarMas,
+      error,
+      fetchDespachos,
+      recargar,
+    }),
+    [
+      despachos,
+      despachoActivo,
+      agregarDespacho,
+      actualizarDespacho,
+      seleccionarDespacho,
+      despachosPorPersonal,
+      setDespachoActivoPorUsuario,
+      limpiarDespachoActivo,
+      loading,
+      loadingMore,
+      nextCursor,
+      cargarMas,
+      error,
+      fetchDespachos,
+      recargar,
+    ],
+  );
+
+  return <DespachosContext.Provider value={value}>{children}</DespachosContext.Provider>;
+};
+
+export default DespachosProvider;
