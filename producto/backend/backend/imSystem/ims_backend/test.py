@@ -6,17 +6,17 @@ import csv
 import requests
 from statistics import mean, median
 
-sys.path.insert(0, '/home/miku/Documents/tests/javi')
-from funciones import CREDENCIALES, BASE_URL, HEADERS_BASE, DESPACHO_URL, PAYLOAD_DESPACHO
+from ims_backend.funciones import * 
 
-AUTH_URL     = f"{BASE_URL}/auth/"
-LOGIN_URL    = f"{BASE_URL}/login/"
-LOGS_URL     = f"{BASE_URL}/logs/"
-ASIGNAR_URL  = f"{BASE_URL}/despachos/asignar/"
-PROGRAMAR_URL = f"{BASE_URL}/despachos/programar/"
-ATENCION_URL = f"{BASE_URL}/atenciones/add/"
-ESTADOS_URL    = f"{BASE_URL}/ambulancias/estados/"
-VERIFICAR_URL  = f"{BASE_URL}/documentos/verificar/"
+AUTH_URL          = f"{BASE_URL}/auth/"
+LOGIN_URL         = f"{BASE_URL}/login/"
+LOGS_URL          = f"{BASE_URL}/logs/"
+DESPACHOS_ALL_URL = f"{BASE_URL}/despachos/all/"
+ASIGNAR_URL       = f"{BASE_URL}/despachos/asignar/"
+PROGRAMAR_URL     = f"{BASE_URL}/despachos/programar/"
+ATENCION_URL      = f"{BASE_URL}/atenciones/add/"
+ESTADOS_URL       = f"{BASE_URL}/ambulancias/estados/"
+VERIFICAR_URL     = f"{BASE_URL}/documentos/verificar/"
 
 resultados_lock = threading.Lock()
 
@@ -30,10 +30,12 @@ resultados_escritura: list[tuple[int, float]] = []
 paginas_por_hilo_lectura: list[int] = []
 
 
-# ── Auth ──────────────────────────────────────────────────────────────────────
+# autenticacion
 
 def autenticar(s: requests.Session) -> bool:
-    res = s.post(AUTH_URL, json=CREDENCIALES, headers=HEADERS_BASE)
+    username = input("Usuario (RUT): ").strip()
+    password = input("Contraseña: ").strip()
+    res = s.post(AUTH_URL, json={"username": username, "password": password}, headers=HEADERS_BASE)
     if res.status_code != 200:
         print(f"AUTH falló [{res.status_code}]:", res.text)
         return False
@@ -53,8 +55,7 @@ def autenticar(s: requests.Session) -> bool:
     return res_login.status_code == 200
 
 
-# ── Paginator browser ─────────────────────────────────────────────────────────
-
+#paginacion
 def fetch_page(s: requests.Session, url: str) -> dict | None:
     csrf = s.cookies.get("csrftoken")
     res = s.get(url, headers={**HEADERS_BASE, "X-CSRFToken": csrf})
@@ -164,7 +165,7 @@ def ejecutar_carga(s: requests.Session, n: int) -> dict:
     return {"n": n, "duracion_total_s": round(duracion_total, 2), **stats}
 
 
-# ── Mixed mode workers ────────────────────────────────────────────────────────
+#mix
 
 def worker_lectura_mixta(s: requests.Session, csrf: str):
     url: str | None = LOGS_URL
@@ -252,7 +253,7 @@ def mostrar_metricas_mixta(m: dict):
     print(f"  ─────────────────────────────────────────")
     print(f"  Tiempo total : {m['duracion_total_s']} s")
 
-    # Rating based on combined error rate
+    # rate basado en error
     total_req = m["lectura"]["total_requests"] + m["escritura"]["total_requests"]
     total_err = m["lectura"]["errores"]         + m["escritura"]["errores"]
     er  = total_err / total_req if total_req else 0
@@ -482,7 +483,71 @@ def modo_mixto(s: requests.Session):
             break
 
 
-# ── Notificaciones ────────────────────────────────────────────────────────────
+# despachos x estado
+
+_ESTADOS_DESPACHO = {
+    "1": "recibido",
+    "2": "asignado",
+    "3": "finalizado",
+    "4": "cancelado",
+    "5": "programado",
+    "6": "emergencia",
+}
+
+
+def modo_despachos_estado(s: requests.Session):
+    while True:
+        print(f"\n{'=' * 60}")
+        print("  DESPACHOS POR ESTADO")
+        print("=" * 60)
+        for k, v in _ESTADOS_DESPACHO.items():
+            print(f"  [{k}] {v}")
+        print("  [a] todos (sin filtro)")
+        print("  [q] Volver al menú principal")
+        opcion = input("\nEstado: ").strip().lower()
+
+        if opcion == "q":
+            break
+
+        if opcion == "a":
+            url: str | None = DESPACHOS_ALL_URL
+        elif opcion in _ESTADOS_DESPACHO:
+            url = f"{DESPACHOS_ALL_URL}?estado={_ESTADOS_DESPACHO[opcion]}"
+        else:
+            print("  Opción no válida.")
+            continue
+
+        page_num = 1
+        while url:
+            print(f"\n{'=' * 60}")
+            print(f"  Página {page_num}  |  {url}")
+            print("=" * 60)
+
+            data = fetch_page(s, url)
+            if data is None:
+                break
+
+            results = data.get("results", [])
+            print(f"Resultados en esta página: {len(results)}")
+            print(json.dumps(data, indent=2, ensure_ascii=False))
+
+            next_url = data.get("next")
+            print(f"\n  next     → {next_url}")
+            print(f"  previous → {data.get('previous')}")
+
+            if not next_url:
+                print("\nFin de los resultados.")
+                break
+
+            action = input("\n[Enter] siguiente  |  [q] salir: ").strip().lower()
+            if action == "q":
+                break
+
+            url = next_url
+            page_num += 1
+
+
+#  Notificaciones
 
 ESTADOS_AMBULANCIA = {
     "1": ("Disponible",        "Ambulancia prepara para ser usada"),
@@ -615,7 +680,7 @@ def modo_notificaciones(s: requests.Session):
         else:               print("  Opción no válida.")
 
 
-# ── Verificador de documentos ─────────────────────────────────────────────────
+# verificador de documentos
 
 def modo_verificar_documento(s: requests.Session):
     while True:
@@ -663,7 +728,7 @@ def modo_verificar_documento(s: requests.Session):
             break
 
 
-# ── Entry point ───────────────────────────────────────────────────────────────
+# main
 
 def main():
     s = requests.Session()
@@ -673,11 +738,12 @@ def main():
         return
 
     while True:
-        print("\n  [1] Navegar páginas del paginator")
+        print("\n  [1] Navegar páginas del paginator (logs)")
         print("  [2] Test de carga concurrente (solo lectura)")
         print("  [3] Test de carga mixto (lectura + escritura)")
         print("  [4] Probar notificaciones FCM")
         print("  [5] Verificar documento (hash + firma)")
+        print("  [6] Despachos por estado (filtro ?estado=)")
         print("  [q] Salir")
         opcion = input("\nOpción: ").strip().lower()
 
@@ -691,6 +757,8 @@ def main():
             modo_notificaciones(s)
         elif opcion == "5":
             modo_verificar_documento(s)
+        elif opcion == "6":
+            modo_despachos_estado(s)
         elif opcion == "q":
             break
         else:
