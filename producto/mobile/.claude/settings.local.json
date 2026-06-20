@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(find /home/pcp/Documentos/proyectos/imSystem_Backend -type f -name \"*.py\" | grep -E \"\\(views|serializers|urls\\)\" | sort)",
+      "Read(//home/pcp/Documentos/proyectos/imSystem_Backend/**)",
+      "Bash(ls /home/pcp/Documentos/proyectos/imSystem_Backend/)",
+      "Bash(sed -n '/const mapearControl/,/^      }\\);/p' /home/pcp/Documentos/proyectos/ims_reactnative/context/DespachosContext.tsx)",
+      "Bash(npx tsc *)",
+      "Bash(curl -sv --max-time 5 https://956.duckdns.org/ims/api/login/)",
+      "Bash(find /home/pcp/Documentos/proyectos -maxdepth 3 -type d | grep -v node_modules | grep -v \".git\")",
+      "Read(//home/pcp/Documentos/proyectos/**)",
+      "Bash(cp -r /home/pcp/Documentos/proyectos/imSystem_Backend /home/pcp/Documentos/proyectos/imSystem_Backend_local)",
+      "Bash(rm -rf /home/pcp/Documentos/proyectos/imSystem_Backend_local/.git)",
+      "Bash(venv/bin/pip install *)",
+      "Bash(curl -s http://localhost:8000/ims/api/login/ -I)",
+      "Bash(venv/bin/python manage.py runserver 0.0.0.0:8000)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(curl -s http://localhost:8000/ims/api/login/ -o /dev/null -w \"%{http_code}\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git mv *)",
+      "Bash(git *)",
+      "Bash(python3 -c \"import firebase_admin; print\\(firebase_admin.__file__\\)\")",
+      "Bash(venv/bin/python3 -c \"import firebase_admin; print\\(firebase_admin.__version__\\)\")",
+      "Bash(npx jest *)",
+      "Bash(npm uninstall *)",
+      "Bash(curl -s -A \"ims-ambulancias-app-test\" \"https://nominatim.openstreetmap.org/search?q=Yerbas+Buenas+710%2C+Valparaiso&format=jsonv2&addressdetails=1&countrycodes=cl&limit=5\")",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -A \"ims-ambulancias-app-test\" \"https://nominatim.openstreetmap.org/search?street=Yerbas+Buenas+710&city=Valparaiso&format=jsonv2&addressdetails=1&countrycodes=cl&limit=5\")",
+      "Bash(xargs -I{} sh -c 'echo \"== {} ==\"; cat {}')"
+    ]
+  }
+}
