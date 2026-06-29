@@ -107,7 +107,6 @@ docs/_build/
 .python-version
 target/
 Cargo.lock
-*.png
 producto/backend/imSystem_Backend
 
 # excepcion: *.json y *.png arriba son reglas globales pensadas para backend,
