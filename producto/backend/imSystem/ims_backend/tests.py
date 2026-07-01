@@ -4,9 +4,17 @@ import time
 import threading
 import csv
 import requests
+from datetime import datetime
 from statistics import mean, median
-
-from funciones import BASE_URL, HEADERS_BASE, DESPACHO_URL, PAYLOAD_DESPACHO
+HEADERS_BASE = {"Referer": "https://api.imsambulancias.cl/"}
+BASE_URL = "https://api.imsambulancias.cl/ims/api"
+PAYLOAD_DESPACHO = {
+    "direccion_origen": "Av. Libertad 123",
+    "direccion_destino": "Hospital Regional",
+    "descripcion_llamado": "Prueba de carga, puede ser borrado, no asociado a atencion",
+    "paciente_rut": "20999999-9"
+}
+DESPACHO_URL = f"{BASE_URL}/despachos/add/"
 
 AUTH_URL          = f"{BASE_URL}/auth/"
 LOGIN_URL         = f"{BASE_URL}/login/"
@@ -17,6 +25,9 @@ PROGRAMAR_URL     = f"{BASE_URL}/despachos/programar/"
 ATENCION_URL      = f"{BASE_URL}/atenciones/add/"
 ESTADOS_URL       = f"{BASE_URL}/ambulancias/estados/"
 VERIFICAR_URL     = f"{BASE_URL}/documentos/verificar/"
+SENALES_URL       = f"{BASE_URL}/senales/"
+CANCELAR_URL      = f"{BASE_URL}/despachos/cancelar/"
+MIS_DESPACHOS_URL = f"{BASE_URL}/despachos/get/"
 
 resultados_lock = threading.Lock()
 
@@ -30,7 +41,7 @@ resultados_escritura: list[tuple[int, float]] = []
 paginas_por_hilo_lectura: list[int] = []
 
 
-
+# ── Auth ──────────────────────────────────────────────────────────────────────
 
 def autenticar(s: requests.Session) -> bool:
     username = input("Usuario (RUT): ").strip()
@@ -55,6 +66,7 @@ def autenticar(s: requests.Session) -> bool:
     return res_login.status_code == 200
 
 
+# ── Paginator browser ─────────────────────────────────────────────────────────
 
 def fetch_page(s: requests.Session, url: str) -> dict | None:
     csrf = s.cookies.get("csrftoken")
@@ -97,6 +109,7 @@ def modo_paginas(s: requests.Session):
         page_num += 1
 
 
+# ── Concurrent load test ──────────────────────────────────────────────────────
 
 def worker(s: requests.Session, csrf: str):
     url: str | None = LOGS_URL
@@ -164,6 +177,7 @@ def ejecutar_carga(s: requests.Session, n: int) -> dict:
     return {"n": n, "duracion_total_s": round(duracion_total, 2), **stats}
 
 
+# ── Mixed mode workers ────────────────────────────────────────────────────────
 
 def worker_lectura_mixta(s: requests.Session, csrf: str):
     url: str | None = LOGS_URL
@@ -481,6 +495,7 @@ def modo_mixto(s: requests.Session):
             break
 
 
+# ── Despachos por estado ─────────────────────────────────────────────────────
 
 _ESTADOS_DESPACHO = {
     "1": "recibido",
@@ -544,6 +559,7 @@ def modo_despachos_estado(s: requests.Session):
             page_num += 1
 
 
+# ── Notificaciones ────────────────────────────────────────────────────────────
 
 ESTADOS_AMBULANCIA = {
     "1": ("Disponible",        "Ambulancia prepara para ser usada"),
@@ -676,6 +692,7 @@ def modo_notificaciones(s: requests.Session):
         else:               print("  Opción no válida.")
 
 
+# ── Verificador de documentos ─────────────────────────────────────────────────
 
 def modo_verificar_documento(s: requests.Session):
     while True:
@@ -723,6 +740,588 @@ def modo_verificar_documento(s: requests.Session):
             break
 
 
+# ── Registrar atención ────────────────────────────────────────────────────────
+
+def _pedir_int_opcional(prompt: str) -> int | None:
+    val = input(prompt).strip()
+    if val == "":
+        return None
+    try:
+        return int(val)
+    except ValueError:
+        print("  Valor inválido, se usará null.")
+        return None
+
+
+def _pedir_signos_vitales() -> list[dict]:
+    signos: list[dict] = []
+    print("\n  -- Signos vitales --")
+    print("  Ingresa una medición por vez. Enter vacío en 'hora' para terminar.")
+    while True:
+        hora = input("  hora (HHMM, Enter para terminar): ").strip()
+        if hora == "":
+            break
+        sv: dict = {
+            "hora":               hora,
+            "presion_sistolica":  _pedir_int_opcional("    presion_sistolica  (Enter=null): "),
+            "presion_diastolica": _pedir_int_opcional("    presion_diastolica (Enter=null): "),
+            "frecuencia_cardiaca":_pedir_int_opcional("    frecuencia_cardiaca(Enter=null): "),
+            "saturacion_oxigeno": _pedir_int_opcional("    saturacion_oxigeno (Enter=null): "),
+            "fr":                 _pedir_int_opcional("    fr                 (Enter=null): "),
+            "fio2":               _pedir_int_opcional("    fio2               (Enter=null): "),
+            "hgt":                _pedir_int_opcional("    hgt                (Enter=null): "),
+            "gcs":                _pedir_int_opcional("    gcs                (Enter=null): "),
+            "eva":                _pedir_int_opcional("    eva                (Enter=null): "),
+            "temperatura":        input("    temperatura        (Enter=null): ").strip() or None,
+            "observaciones":      input("    observaciones      : ").strip(),
+        }
+        # strip None temperatura if blank
+        if sv["temperatura"] is not None:
+            try:
+                sv["temperatura"] = float(sv["temperatura"])
+            except ValueError:
+                print("    Temperatura inválida, se usará null.")
+                sv["temperatura"] = None
+        signos.append(sv)
+    return signos
+
+
+def _pedir_insumos() -> list[dict]:
+    insumos: list[dict] = []
+    print("\n  -- Insumos utilizados --")
+    print("  Ingresa un insumo por vez. Enter vacío en 'presentacion_id' para terminar.")
+    while True:
+        pid = input("  presentacion_id (Enter para terminar): ").strip()
+        if pid == "":
+            break
+        try:
+            pid_int = int(pid)
+        except ValueError:
+            print("  ID inválido, saltando.")
+            continue
+        try:
+            cantidad = int(input("  cantidad_usada: ").strip())
+        except ValueError:
+            print("  Cantidad inválida, saltando.")
+            continue
+        obs = input("  observaciones (Enter para omitir): ").strip()
+        insumos.append({
+            "presentacion_id": pid_int,
+            "cantidad_usada":  cantidad,
+            "observaciones":   obs,
+        })
+    return insumos
+
+
+def modo_registrar_atencion(s: requests.Session):
+    while True:
+        print(f"\n{'=' * 60}")
+        print("  REGISTRAR ATENCIÓN")
+        print("=" * 60)
+        print("  [q] Volver al menú principal")
+
+        # ── despacho ────────────────────────────────────────────────
+        try:
+            despacho_id   = int(input("\n  despacho_id   : ").strip())
+            ambulancia_id = int(input("  ambulancia_id : ").strip())
+        except ValueError:
+            print("  Valor inválido, cancelando.")
+            accion = input("\n  [r] reintentar  |  [q] volver: ").strip().lower()
+            if accion != "r":
+                break
+            continue
+
+        hora_salida  = input("  hora_salida  (YYYY-MM-DDTHH:MM:SS): ").strip()
+        hora_llegada = input("  hora_llegada (YYYY-MM-DDTHH:MM:SS, Enter para omitir): ").strip() or None
+        rut_receptor = input("  rut_receptor : ").strip()
+
+        # ── signos vitales ───────────────────────────────────────────
+        signos = _pedir_signos_vitales()
+
+        # ── preinforme ───────────────────────────────────────────────
+        print("\n  -- Pre-informe --")
+        preinforme = {
+            "pre_informe":     input("  pre_informe     : ").strip(),
+            "motivo_llamado":  input("  motivo_llamado  : ").strip(),
+            "estado_paciente": input("  estado_paciente : ").strip(),
+        }
+
+        # ── cronología ───────────────────────────────────────────────
+        print("\n  -- Cronología (HHMM, Enter=null) --")
+        cronologia = {
+            "hora_llamada":   input("  hora_llamada   : ").strip() or None,
+            "despacho_movil": input("  despacho_movil : ").strip() or None,
+            "llegada_qth1":   input("  llegada_qth1   : ").strip() or None,
+            "salida_qth1":    input("  salida_qth1    : ").strip() or None,
+            "llegada_qth2":   input("  llegada_qth2   : ").strip() or None,
+            "salida_qth2":    input("  salida_qth2    : ").strip() or None,
+            "categoria":      input("  categoria (ej. C1): ").strip(),
+        }
+
+        # ── insumos ──────────────────────────────────────────────────
+        insumos = _pedir_insumos()
+
+        # ── payload ──────────────────────────────────────────────────
+        payload = {
+            "despacho": {
+                "despacho_id":   despacho_id,
+                "ambulancia_id": ambulancia_id,
+                "hora_salida":   hora_salida,
+                **({"hora_llegada": hora_llegada} if hora_llegada else {}),
+            },
+            "signos_vitales":     signos,
+            "preinforme":         preinforme,
+            "cronologia":         cronologia,
+            "insumos_utilizados": insumos,
+            "rut_receptor":       rut_receptor,
+        }
+
+        print(f"\n  Payload:\n{json.dumps(payload, indent=2, ensure_ascii=False)}")
+        confirmar = input("\n  ¿Enviar? [s/N]: ").strip().lower()
+        if confirmar != "s":
+            print("  Cancelado.")
+        else:
+            r = s.post(ATENCION_URL, json=payload, headers=_csrf_headers(s))
+            _notif_result(r)
+            if r.status_code < 400:
+                try:
+                    data = r.json()
+                    print(f"  Hash del documento : {data.get('hash', 'N/A')}")
+                except Exception:
+                    pass
+
+        accion = input("\n  [r] registrar otra  |  [q] volver: ").strip().lower()
+        if accion != "r":
+            break
+
+
+# ── Atención rápida (payload predeterminado) ──────────────────────────────────
+
+_DEFAULT_RUT_RECEPTOR = "0-0"
+
+_DEFAULT_SIGNOS = [
+    {
+        "hora":               "0800",
+        "presion_sistolica":  120,
+        "presion_diastolica": 80,
+        "frecuencia_cardiaca":72,
+        "saturacion_oxigeno": 98,
+        "fr":                 16,
+        "fio2":               21,
+        "hgt":                100,
+        "gcs":                15,
+        "eva":                2,
+        "temperatura":        36.5,
+        "observaciones":      "",
+    }
+]
+
+_DEFAULT_PREINFORME = {
+    "pre_informe":     "Paciente en buen estado general",
+    "motivo_llamado":  "Evaluacion de rutina",
+    "estado_paciente": "Estable",
+}
+
+_DEFAULT_CRONOLOGIA = {
+    "hora_llamada":   "0750",
+    "despacho_movil": "0800",
+    "llegada_qth1":   "0810",
+    "salida_qth1":    "0815",
+    "llegada_qth2":   "0820",
+    "salida_qth2":    "0825",
+    "categoria":      "C1",
+}
+
+
+def _fetch_despacho(s: requests.Session, despacho_id: int) -> dict | None:
+    """GET /api/despachos/all/{id}/ — returns the despacho dict or None on error."""
+    r = s.get(
+        f"{DESPACHOS_ALL_URL}{despacho_id}/",
+        headers=_csrf_headers(s),
+    )
+    if r.status_code != 200:
+        print(f"  [ERR] No se pudo obtener el despacho [{r.status_code}]: {r.text[:200]}")
+        return None
+    return r.json()
+
+
+def _resultado_atencion(r: requests.Response):
+    ok = r.status_code < 400
+    tag = "OK " if ok else "ERR"
+    print(f"  [{tag}] HTTP {r.status_code}")
+    if ok:
+        try:
+            data = r.json()
+            print(f"  Hash   : {data.get('hash', 'N/A')}")
+            print(f"  Estado : Enviado correctamente")
+        except Exception:
+            print(f"  {r.text[:300]}")
+    else:
+        print(f"  {r.text[:300]}")
+
+
+def _fetch_ambulancia_y_paciente(s, despacho_id):
+    despacho = _fetch_despacho(s, despacho_id)
+    if despacho is None:
+        return None, None, None
+    ambulancia_id = despacho.get("ambulancia_id")
+    if not ambulancia_id:
+        print("  [ERR] El despacho no tiene ambulancia asignada — ¿está en estado 'asignado'?")
+        return None, None, None
+    rut_paciente = (despacho.get("paciente") or {}).get("rut")
+    if not rut_paciente:
+        print("  [ERR] El despacho no tiene paciente asociado.")
+        return None, None, None
+    return ambulancia_id, rut_paciente, despacho
+
+
+def modo_atencion_rapida(s: requests.Session):
+    print(f"\n{'=' * 60}")
+    print("  PAYLOAD PREDETERMINADO")
+    print("=" * 60)
+    print(f"  rut_receptor  : {_DEFAULT_RUT_RECEPTOR}")
+    print(f"  signos_vitales: 1 entrada con valores típicos")
+    print(f"  cronologia    : {_DEFAULT_CRONOLOGIA}")
+    print(f"  insumos       : [] (vacío)")
+    print(f"  paciente      : solo RUT (sin actualizar datos del paciente)")
+    print(f"  hora_salida   : se genera al momento del envío")
+
+    while True:
+        print(f"\n{'─' * 60}")
+        entrada = input("  despacho_id (o [q] para volver): ").strip().lower()
+        if entrada == "q":
+            break
+        try:
+            despacho_id = int(entrada)
+        except ValueError:
+            print("  ID inválido.")
+            continue
+
+        ambulancia_id, rut_paciente, _ = _fetch_ambulancia_y_paciente(s, despacho_id)
+        if ambulancia_id is None:
+            continue
+
+        now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+
+        payload = {
+            "despacho": {
+                "despacho_id":   despacho_id,
+                "ambulancia_id": ambulancia_id,
+                "hora_salida":   now,
+            },
+            "paciente":           {"rut": rut_paciente},
+            "signos_vitales":     _DEFAULT_SIGNOS,
+            "preinforme":         _DEFAULT_PREINFORME,
+            "cronologia":         _DEFAULT_CRONOLOGIA,
+            "insumos_utilizados": [],
+            "rut_receptor":       _DEFAULT_RUT_RECEPTOR,
+        }
+
+        print(f"\n  ambulancia_id : {ambulancia_id}")
+        print(f"  rut_paciente  : {rut_paciente}")
+        print(f"  hora_salida   : {now}")
+
+        _resultado_atencion(s.post(ATENCION_URL, json=payload, headers=_csrf_headers(s)))
+
+
+# ── Atención con datos de paciente ────────────────────────────────────────────
+
+def modo_atencion_con_paciente(s: requests.Session):
+    print(f"\n{'=' * 60}")
+    print("  ATENCIÓN + DATOS DE PACIENTE")
+    print("=" * 60)
+    print("  Igual que atención rápida, pero permite enviar campos")
+    print("  opcionales del paciente. Solo se actualizan los que")
+    print("  reciban un valor — los vacíos se ignoran.")
+
+    while True:
+        print(f"\n{'─' * 60}")
+        entrada = input("  despacho_id (o [q] para volver): ").strip().lower()
+        if entrada == "q":
+            break
+        try:
+            despacho_id = int(entrada)
+        except ValueError:
+            print("  ID inválido.")
+            continue
+
+        ambulancia_id, rut_paciente, _ = _fetch_ambulancia_y_paciente(s, despacho_id)
+        if ambulancia_id is None:
+            continue
+
+        print(f"\n  rut_paciente  : {rut_paciente}")
+        print("  -- Datos opcionales del paciente (Enter = no actualizar) --")
+        fecha_nacimiento   = input("  fecha_nacimiento   (YYYY-MM-DD)  : ").strip() or None
+        telefono           = input("  telefono                         : ").strip()
+        condicion_paciente = input("  condicion_paciente               : ").strip()
+
+        paciente_payload = {"rut": rut_paciente}
+        if fecha_nacimiento:
+            paciente_payload["fecha_nacimiento"] = fecha_nacimiento
+        if telefono:
+            paciente_payload["telefono"] = telefono
+        if condicion_paciente:
+            paciente_payload["condicion_paciente"] = condicion_paciente
+
+        campos_a_actualizar = [k for k in paciente_payload if k != "rut"]
+        if campos_a_actualizar:
+            print(f"\n  Campos que se actualizarán: {', '.join(campos_a_actualizar)}")
+        else:
+            print("\n  Sin campos de paciente a actualizar.")
+
+        now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        payload = {
+            "despacho": {
+                "despacho_id":   despacho_id,
+                "ambulancia_id": ambulancia_id,
+                "hora_salida":   now,
+            },
+            "paciente":           paciente_payload,
+            "signos_vitales":     _DEFAULT_SIGNOS,
+            "preinforme":         _DEFAULT_PREINFORME,
+            "cronologia":         _DEFAULT_CRONOLOGIA,
+            "insumos_utilizados": [],
+            "rut_receptor":       _DEFAULT_RUT_RECEPTOR,
+        }
+
+        _resultado_atencion(s.post(ATENCION_URL, json=payload, headers=_csrf_headers(s)))
+
+
+# ── Señales ───────────────────────────────────────────────────────────────────
+
+def senal_otro(s: requests.Session):
+    print("\n-- Señal: OTRO --")
+    print("  Envía un mensaje libre a todos los usuarios de control.")
+    mensaje = input("  mensaje (max 500 chars): ").strip()
+    if not mensaje:
+        print("  Mensaje vacío, cancelando.")
+        return
+    r = s.post(SENALES_URL, params={"type": "senal_otro"},
+               json={"mensaje": mensaje}, headers=_csrf_headers(s))
+    _notif_result(r)
+
+
+def senal_ambulancia(s: requests.Session):
+    print("\n-- Señal: AMBULANCIA EN PREPARACIÓN --")
+    print("  Marca la ambulancia como 'En preparación' y notifica a control.")
+    patente = input("  patente: ").strip()
+    if not patente:
+        print("  Patente vacía, cancelando.")
+        return
+    r = s.post(SENALES_URL, params={"type": "senal_ambulancia"},
+               json={"patente": patente}, headers=_csrf_headers(s))
+    _notif_result(r)
+
+
+def senal_ocupada(s: requests.Session):
+    print("\n-- Señal: AMBULANCIA OCUPADA --")
+    print("  Marca la ambulancia como 'Actualmente en despacho' y notifica a control.")
+    patente = input("  patente: ").strip()
+    if not patente:
+        print("  Patente vacía, cancelando.")
+        return
+    r = s.post(SENALES_URL, params={"type": "senal_ocupada"},
+               json={"patente": patente}, headers=_csrf_headers(s))
+    _notif_result(r)
+
+
+def senal_outofservice(s: requests.Session):
+    print("\n-- Señal: FALLA MECÁNICA (FUERA DE SERVICIO) --")
+    print("  Marca la ambulancia como 'Fuera de servicio' y notifica a control.")
+    patente = input("  patente: ").strip()
+    if not patente:
+        print("  Patente vacía, cancelando.")
+        return
+    r = s.post(SENALES_URL, params={"type": "senal_outofservice"},
+               json={"patente": patente}, headers=_csrf_headers(s))
+    _notif_result(r)
+
+
+def _senal_equipo_global(s: requests.Session, tipo: str, label: str):
+    print(f"\n-- Señal global: {label} --")
+    grupo = input("  nombre_grupo: ").strip()
+    if not grupo:
+        print("  Grupo vacío, cancelando.")
+        return
+    r = s.post(SENALES_URL, params={"type": tipo, "grupo_n": grupo}, headers=_csrf_headers(s))
+    _notif_result(r)
+
+
+def _senal_equipo_despacho(s: requests.Session, tipo: str, label: str):
+    print(f"\n-- Señal de despacho: {label} --")
+    entrada = input("  despacho_id: ").strip()
+    try:
+        despacho_id = int(entrada)
+    except ValueError:
+        print("  ID inválido, cancelando.")
+        return
+    r = s.post(SENALES_URL, params={"type": tipo, "despacho_id": despacho_id}, headers=_csrf_headers(s))
+    _notif_result(r)
+
+
+def modo_senales(s: requests.Session):
+    while True:
+        print(f"\n{'=' * 60}")
+        print("  SEÑALES — elige cuál probar")
+        print("=" * 60)
+        print("  -- Globales (sin despacho) --")
+        print("  [1] Otro...           → mensaje libre a control")
+        print("  [2] Falla ambulancia  → notifica a control (sin cambio de estado)")
+        print("  [3] Ambulancia ocupada → notifica a control (sin cambio de estado)")
+        print("  [4] Fuera de servicio → falla mecánica, notifica a control")
+        print("  [5] Disponible        → equipo listo para nuevo despacho")
+        print("  [6] Regresando        → equipo regresando a base")
+        print("  -- Vinculadas a despacho (requieren despacho_id) --")
+        print("  [7] En camino         → equipo en camino al destino del despacho")
+        print("  [8] En destino        → equipo llegó al destino del despacho")
+        print("  [9] Operando          → equipo comenzó a operar en el despacho")
+        print("  [q] Volver al menú principal")
+        opcion = input("\nOpción: ").strip().lower()
+
+        if   opcion == "1": senal_otro(s)
+        elif opcion == "2": senal_ambulancia(s)
+        elif opcion == "3": senal_ocupada(s)
+        elif opcion == "4": senal_outofservice(s)
+        elif opcion == "5": _senal_equipo_global(s,   "senal_disponible", "DISPONIBLE")
+        elif opcion == "6": _senal_equipo_global(s,   "senal_regresando", "REGRESANDO")
+        elif opcion == "7": _senal_equipo_despacho(s, "senal_en_camino",  "EN CAMINO")
+        elif opcion == "8": _senal_equipo_despacho(s, "senal_en_destino", "EN DESTINO")
+        elif opcion == "9": _senal_equipo_despacho(s, "senal_operando",   "OPERANDO")
+        elif opcion == "q": break
+        else:               print("  Opción no válida.")
+
+
+# ── Cancelar despacho ─────────────────────────────────────────────────────────
+
+def modo_cancelar_despacho(s: requests.Session):
+    while True:
+        print(f"\n{'=' * 60}")
+        print("  CANCELAR DESPACHO")
+        print("=" * 60)
+        print("  Solo control puede cancelar. Si el despacho tiene un grupo")
+        print("  asignado, ese grupo recibirá una notificación FCM.")
+        print("  [q] Volver al menú principal")
+
+        entrada = input("\n  despacho_id: ").strip().lower()
+        if entrada == "q":
+            break
+        try:
+            despacho_id = int(entrada)
+        except ValueError:
+            print("  ID inválido.")
+            continue
+
+        despacho = _fetch_despacho(s, despacho_id)
+        if despacho is None:
+            continue
+
+        print(f"\n  Estado actual : {despacho.get('estado')}")
+        print(f"  Paciente      : {(despacho.get('paciente') or {}).get('nombre_completo', 'N/A')}")
+        confirmar = input("  ¿Cancelar este despacho? [s/N]: ").strip().lower()
+        if confirmar != "s":
+            print("  Cancelado.")
+            continue
+
+        r = s.patch(CANCELAR_URL, params={"cancel": despacho_id}, headers=_csrf_headers(s))
+        ok = r.status_code < 400
+        tag = "OK " if ok else "ERR"
+        print(f"  [{tag}] HTTP {r.status_code}  →  {r.text[:300]}")
+        if ok:
+            print("  Despacho cancelado. Si tenía grupo asignado, la notificación FCM fue encolada en Celery.")
+
+
+# ── Mis despachos ────────────────────────────────────────────────────────────
+
+_ESTADO_LABEL = {
+    "recibido":   "RECIBIDO",
+    "asignado":   "ASIGNADO",
+    "programado": "PROGRAMADO",
+    "emergencia": "EMERGENCIA",
+    "finalizado": "FINALIZADO",
+    "cancelado":  "CANCELADO",
+}
+
+_ESTADO_COLOR = {
+    "recibido":   "[ ]",
+    "asignado":   "[A]",
+    "programado": "[P]",
+    "emergencia": "[!]",
+    "finalizado": "[F]",
+    "cancelado":  "[X]",
+}
+
+
+def modo_mis_despachos(s: requests.Session):
+    while True:
+        print(f"\n{'=' * 60}")
+        print("  MIS DESPACHOS  (grupo al que perteneces)")
+        print("=" * 60)
+
+        r = s.get(MIS_DESPACHOS_URL, headers=_csrf_headers(s))
+
+        if r.status_code == 404:
+            print("  No estás inscrito en ningún grupo activo.")
+            input("\n  [Enter] volver al menú: ")
+            break
+
+        if r.status_code != 200:
+            print(f"  [ERR] HTTP {r.status_code}: {r.text[:300]}")
+            input("\n  [Enter] volver al menú: ")
+            break
+
+        despachos = r.json()
+
+        if not despachos:
+            print("  Tu grupo no tiene despachos activos.")
+            input("\n  [Enter] volver al menú: ")
+            break
+
+        print(f"  {len(despachos)} despacho(s) encontrado(s)\n")
+
+        for i, d in enumerate(despachos, start=1):
+            estado     = d.get("estado", "")
+            icono      = _ESTADO_COLOR.get(estado, "[?]")
+            tipo       = _ESTADO_LABEL.get(estado, estado.upper())
+            paciente   = d.get("paciente") or {}
+            ambulancia = d.get("ambulancia") or {}
+            personal   = d.get("personal", [])
+
+            print(f"  {'─' * 56}")
+            print(f"  #{i}  ID:{d.get('id')}  {icono} {tipo}")
+            print(f"  {'─' * 56}")
+            print(f"  Origen     : {d.get('direccionOrigen', 'N/A')}")
+            print(f"  Destino    : {d.get('direccionDestino') or '—'}")
+            if d.get("descripcionLlamado"):
+                print(f"  Descripcion: {d['descripcionLlamado']}")
+            print(f"  Llamado    : {d.get('fechaLlamado', 'N/A')}")
+            if d.get("fechaProgramada"):
+                print(f"  Programado : {d['fechaProgramada']}")
+
+            if paciente:
+                print(f"  Paciente   : {paciente.get('nombre_completo', 'N/A')} "
+                      f"— RUT {paciente.get('rut', 'N/A')}"
+                      f"  (nac. {paciente.get('fecha_nacimiento', 'N/A')})")
+
+            if ambulancia:
+                print(f"  Ambulancia : {ambulancia.get('modelo', 'N/A')} "
+                      f"[{ambulancia.get('patente', 'N/A')}] "
+                      f"— {ambulancia.get('estado', 'N/A')}")
+
+            if personal:
+                nombres = ", ".join(
+                    f"{p.get('personal__first_name','')} {p.get('personal__last_name','')} "
+                    f"({p.get('personal__rol__nombre_rol', '?')})"
+                    for p in personal
+                )
+                print(f"  Equipo     : {nombres}")
+
+        print(f"\n  {'─' * 56}")
+        accion = input("\n  [r] refrescar  |  [q] volver al menú: ").strip().lower()
+        if accion != "r":
+            break
+
+
+# ── Entry point ───────────────────────────────────────────────────────────────
 
 def main():
     s = requests.Session()
@@ -738,6 +1337,12 @@ def main():
         print("  [4] Probar notificaciones FCM")
         print("  [5] Verificar documento (hash + firma)")
         print("  [6] Despachos por estado (filtro ?estado=)")
+        print("  [7] Registrar atención (flujo completo)")
+        print("  [8] Atención rápida (payload predeterminado)")
+        print("  [9] Atención con datos de paciente (fecha_nacimiento / telefono / condicion)")
+        print("  [10] Señales (otro / ambulancia / ocupada / fuera de servicio)")
+        print("  [11] Cancelar despacho")
+        print("  [12] Mis despachos (despachos de tu grupo)")
         print("  [q] Salir")
         opcion = input("\nOpción: ").strip().lower()
 
@@ -753,6 +1358,18 @@ def main():
             modo_verificar_documento(s)
         elif opcion == "6":
             modo_despachos_estado(s)
+        elif opcion == "7":
+            modo_registrar_atencion(s)
+        elif opcion == "8":
+            modo_atencion_rapida(s)
+        elif opcion == "9":
+            modo_atencion_con_paciente(s)
+        elif opcion == "10":
+            modo_senales(s)
+        elif opcion == "11":
+            modo_cancelar_despacho(s)
+        elif opcion == "12":
+            modo_mis_despachos(s)
         elif opcion == "q":
             break
         else:

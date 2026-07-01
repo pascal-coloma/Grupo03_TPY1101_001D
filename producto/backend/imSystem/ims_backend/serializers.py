@@ -14,8 +14,8 @@ class PersonalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Personal
-        fields = ['id', 'username', 'first_name', 'last_name', 'rut', 'is_active', 'rol_nombre']
-        read_only_fields = ['username', 'rol_nombre']
+        fields = ['id', 'username', 'first_name', 'last_name', 'rut', 'is_active', 'rol_nombre', 'last_login']
+        read_only_fields = ['username', 'rol_nombre', 'last_login']
 
 class LogAuditoriaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -42,6 +42,7 @@ class DespachoListSerializer(serializers.ModelSerializer):
         return {
             "nombre_completo": obj.paciente.nombre_completo,
             "rut": obj.paciente.rut,
+            "fecha_nacimiento": obj.paciente.fecha_nacimiento
         }
 
     def get_personal(self, obj):
@@ -183,6 +184,7 @@ class PayloadSerializer(serializers.Serializer):
     cronologia = CronologiaSerializer()
     insumos_utilizados = InsumoUtilizadoSerializer(many=True)
     rut_receptor = serializers.CharField()
+    paciente = PacienteSerializer()
 class AuthenticationSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
@@ -235,9 +237,17 @@ class AddAmbulanciaSerializer(serializers.Serializer):
 
 class CambiarEstadoAmbulancia(serializers.Serializer):
     ambid = serializers.IntegerField()
-    conid = serializers.IntegerField()
     estado = serializers.ChoiceField(Ambulancia.ESTADOS)
 
 class VerificarDocumentoSerializer(serializers.Serializer):
     hash  = serializers.CharField(max_length=64)
     firma = serializers.CharField(required=False)
+
+class CancelarDespachoSerializer(serializers.Serializer):
+    cancel = serializers.IntegerField()
+
+class SenalOtroSerializer(serializers.Serializer):
+    mensaje = serializers.CharField(max_length=500)
+
+class SenalPatenteSerializer(serializers.Serializer):
+    patente = serializers.CharField(max_length=10)

@@ -26,6 +26,7 @@ from .serializers import AuthenticationSerializer
 from .serializers import ProgramarDespachoSerializer
 from .serializers import DeviceToken
 from .serializers import AddAmbulanciaSerializer
+from .serializers import CancelarDespachoSerializer
 # ─── MODELS ──────────────────────────────────────────────────────────────────
 from .models import Personal
 from .models import Paciente
@@ -52,7 +53,7 @@ from ims_backend.toolbox.exceptions import (ConflictException, BadRequestExcepti
                                               UnAuthorizedException, ForbiddenException)
 from ims_backend.task_package.task_log_grupos import crear_grupo_log, agregar_miembros_log,actualizar_estado_miembros_log
 from ims_backend.task_package.task_log_paciente import agregar_paciente_log
-from ims_backend.task_package.task_log_despacho import crear_despacho_log, asignar_despacho_log, cambiar_estado_log
+from ims_backend.task_package.task_log_despacho import crear_despacho_log, asignar_despacho_log, cambiar_estado_log, cancelar_despacho_log
 from ims_backend.task_package.task_log_personal import agregar_personal_log
 from ims_backend.task_package.task_log_ambulancias import agregar_ambulancia_log
 from ims_backend.toolbox.Fhir_package.export_r4 import export_hl7
@@ -69,8 +70,9 @@ from ims_backend.toolbox.Personal_package.set_device_token import set_device
 # Permiso custom: restringe acceso a usuarios con rol control
 # Usar en vistas donde solo personal de control debe operar (como por ejemplo asignar trabajores, despachos etc)
 from ims_backend.auth_package.permissions import (ControlProfileOnly,
-                                                  NurseProfileOnly, MedicProfileOnly, MFAVerified, DriverProfileOnly,
-                                                  MFAAndAnyProfile, MFAAndClinicalProfile, MFAAndMedicalStaff)
+                                                  NurseProfileOnly, MedicProfileOnly, MFAVerified,
+                                                  MFAAndAnyProfile, MFAAndClinicalProfile, MFAAndMedicalStaff,
+                                                  MFAAndFieldStaff)
 
 # =============================================================================
 # UTILIDADES
@@ -333,7 +335,7 @@ class RegistroAtencionAPI(APIView):
 
 class GruposObtener(APIView):
     http_method_names = ['get']
-    permission_classes = [ControlProfileOnly & MFAVerified]
+    permission_classes = [MFAAndAnyProfile]
     def get(self, request):
         if request.query_params:
             r = with_query(request.query_params)
@@ -394,7 +396,7 @@ class GrupoRemoverMiembro(APIView):
                         "group_id":grupo_to_update.id,
                         "group_name":grupo_to_update.nombre_grupo,
                         "rut":request.user.rut,
-                        "id":request.user.id
+                        "user_id":request.user.id
                     }
                     transaction.on_commit(lambda:actualizar_estado_miembros_log.delay(data=log_data))
                 return Response({'success':'success'}, status=status.HTTP_200_OK)
@@ -568,7 +570,9 @@ class AsignarDespacho(APIView):
                                          'personal_name':members.personal.full_name})
                     transaction.on_commit(lambda: asignar_despacho_log.delay(data=log_data))
                 if valid_data["is_emergency"]:
-                    notificacion.delay(type=Despacho.EMERGENCIA, dir=_despacho.direccion_destino, grupo_id=grupo_nombre.id)
+                    notificacion.delay(type=Despacho.EMERGENCIA, dir=_despacho.direccion_origen, grupo_id=grupo_nombre.id)
+                else:
+                    notificacion.delay(type=Despacho.ASIGNADO, grupo_id=grupo_nombre.id, despacho_id=_despacho.id)
                 return Response({'success':'success', 'despacho_data':{
                         'id':valid_data['despacho_id'],
                         'grupo':{
@@ -597,7 +601,9 @@ class ProgramarDespacho(APIView):
             try:
                 with transaction.atomic():
                     _despacho = get_object_or_404(Despacho, id=_valid_data["despacho_id"])
+                    _grupo    = get_object_or_404(GrupoPersonal, id=_valid_data["grupo_id"])
                     change_despacho_status(type=Despacho.PROGRAMADO, despacho=_despacho,fecha_prog=_valid_data["fecha_programada"])
+                    DespachoPersonal.objects.get_or_create(despacho=_despacho, grupo=_grupo)
                     log_data["despacho_id"] = _valid_data["despacho_id"]
                     log_data["estado"] = Despacho.PROGRAMADO
                     transaction.on_commit(lambda: cambiar_estado_log.delay(data=log_data))
@@ -606,6 +612,41 @@ class ProgramarDespacho(APIView):
             except Exception as e: return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else: return Response({}, status=status.HTTP_400_BAD_REQUEST)
         
+
+class CancelarDespacho(APIView):
+    http_method_names = ['patch']
+    permission_classes = [ControlProfileOnly & MFAVerified]
+
+    def patch(self, request):
+        serializer = CancelarDespachoSerializer(data=request.query_params)
+        if not serializer.is_valid():
+            raise BadRequestException(detail=serializer.errors)
+
+        despacho = get_object_or_404(Despacho, id=serializer.validated_data['cancel'])
+
+        if despacho.estado in (Despacho.FINALIZADO, Despacho.CANCELADO):
+            raise ConflictException(detail="El despacho no puede ser cancelado en su estado actual.")
+
+        despacho_personal = DespachoPersonal.objects.filter(despacho=despacho).select_related('grupo').first()
+        grupo_id = despacho_personal.grupo.id if despacho_personal else None
+
+        log_data = {
+            "rut": request.user.rut,
+            "user_id": request.user.id,
+            "despacho_id": despacho.id,
+            "grupo_id": grupo_id,
+        }
+
+        with transaction.atomic():
+            change_despacho_status(type=Despacho.CANCELADO, despacho=despacho)
+            transaction.on_commit(lambda: cancelar_despacho_log.delay(data=log_data))
+            if grupo_id:
+                transaction.on_commit(lambda: notificacion.delay(
+                    type=Despacho.CANCELADO, grupo_id=grupo_id, despacho_id=despacho.id
+                ))
+
+        return Response({}, status=status.HTTP_200_OK)
+
 
 # API para obtener TODOS Los despachos sin necesidad de incluir al usuario per se
 class AllDespachos(APIView):
@@ -649,16 +690,16 @@ class FHIR(APIView):
         
 class CambiarEstadoAmbulancia(APIView):
     http_method_names = ['patch']
-    permission_classes = [MFAVerified & DriverProfileOnly]
+    permission_classes = [ControlProfileOnly & MFAVerified]
     def patch(self, request):
-        if cambiar_estado.cambiar_estado(request.query_params):
+        if cambiar_estado.cambiar_estado(request.query_params, request.user.rut):
             return Response({}, status=status.HTTP_200_OK)
 
 
 class VerificarDocumentoAPI(APIView):
     from ims_backend.serializers import VerificarDocumentoSerializer
     http_method_names = ['get']
-    permission_classes = [MFAVerified]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         from ims_backend.models import Documento
@@ -725,3 +766,18 @@ class VerificarDocumentoAPI(APIView):
 
         result["valido"] = hash_ok and sig_s3_ok
         return Response(result, status=status.HTTP_200_OK)
+
+
+class SenalAPI(APIView):
+    http_method_names = ['post']
+    permission_classes = [MFAAndFieldStaff]
+
+    def post(self, request):
+        from ims_backend.toolbox.Senales_package.signal_handler import handle_signal
+        tipo = request.query_params.get('type')
+        raw_did = request.query_params.get('despacho_id')
+        grupo_n = request.query_params.get('grupo_n')
+        despacho_id = int(raw_did) if raw_did and raw_did.isdigit() else None
+        with transaction.atomic():
+            handle_signal(tipo, request.data, grupo_n ,request.user, despacho_id=despacho_id)
+        return Response({}, status=status.HTTP_200_OK)
