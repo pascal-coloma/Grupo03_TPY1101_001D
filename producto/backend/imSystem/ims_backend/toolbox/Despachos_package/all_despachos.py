@@ -36,12 +36,14 @@ def all_despachos(query_params=None):
                     'descripcion_llamado': despacho.descripcion_llamado,
                     'fecha_llamado': despacho.fecha_llamado,
                     'fecha_asignacion': despacho.fecha_asignacion,
+                    'fecha_programada': despacho.fecha_programada,
                     'ambulancia_id': despacho.ambulancia_id,
                     'creado_por_id': despacho.creado_por_id,
                     'asignado_por_id': despacho.asignado_por_id,
                     'paciente':{
                         'nombre_completo': despacho.paciente.nombre_completo,
-                        'rut':despacho.paciente.rut
+                        'rut':despacho.paciente.rut,
+                        'fecha_nacimiento':despacho.paciente.fecha_nacimiento if despacho.paciente.fecha_nacimiento else None
                     } if despacho.paciente else None,
                     'personal': personal
                 }
@@ -86,10 +88,12 @@ def all_despachos(query_params=None):
                     'descripcion_llamado': d.descripcion_llamado,
                     'fecha_llamado': d.fecha_llamado,
                     'fecha_asignacion': d.fecha_asignacion,
+                    'fecha_programada': d.fecha_programada,
                     'ambulancia_id': d.ambulancia_id,
                     'paciente':{
                         'nombre_completo':d.paciente.nombre_completo,
-                        'rut':d.paciente.rut
+                        'rut':d.paciente.rut,
+                        'fecha_nacimiento': d.paciente.fecha_nacimiento
                     } if d.paciente else None,
                     'personal': personal
                 })
