@@ -36,8 +36,7 @@ jest.mock('expo-router', () => {
       testID: `screen:${name}:${options?.href === null ? 'hidden' : 'visible'}`,
     });
   return {
-    Redirect: ({ href }: { href: string }) =>
-      createElement(View, { testID: `redirect:${href}` }),
+    Redirect: ({ href }: { href: string }) => createElement(View, { testID: `redirect:${href}` }),
     Tabs,
   };
 });

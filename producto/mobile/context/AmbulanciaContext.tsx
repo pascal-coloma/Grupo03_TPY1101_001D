@@ -13,9 +13,13 @@ import {
 
 type AmbulanciaContextType = {
   ambulancias: Ambulancia[];
-  cambiarEstado: (ambulanciaId: string, estado: AmbulanciaEstado) => Promise<void>;
   loading: boolean;
   error: string | null;
+  registrarAmbulancia: (data: {
+    patente: string;
+    modelo: string;
+    estado_disponibilidad?: AmbulanciaEstado;
+  }) => Promise<{ success: string; ambulancia_id: number }>;
 };
 
 const AmbulanciaContext = createContext<AmbulanciaContextType | null>(null);
@@ -54,25 +58,23 @@ export const AmbulanciaProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user?.role]);
 
-  const cambiarEstado = useCallback(
-    async (ambulanciaId: string, estado: AmbulanciaEstado) => {
-      const params = new URLSearchParams({
-        ambid: ambulanciaId,
-        conid: user?.personalId ?? '',
-        estado,
+  const registrarAmbulancia = useCallback(
+    async (data: { patente: string; modelo: string; estado_disponibilidad?: AmbulanciaEstado }) => {
+      const response = await fetchConSesion('/ims/api/ambulancias/add/', {
+        method: 'POST',
+        body: JSON.stringify(data),
       });
-      const response = await fetchConSesion(`/ims/api/ambulancias/estados/?${params}`, {
-        method: 'PATCH',
-      });
-      if (!response.ok) throw new Error(`Error ${response.status}`);
+      const json = await response.json();
+      if (!response.ok) throw new Error(json.error ?? `Error ${response.status}`);
       await fetchAmbulancias();
+      return json as { success: string; ambulancia_id: number };
     },
-    [user?.personalId, fetchAmbulancias],
+    [fetchAmbulancias],
   );
 
   const value = useMemo(
-    () => ({ ambulancias, cambiarEstado, loading, error }),
-    [ambulancias, cambiarEstado, loading, error],
+    () => ({ ambulancias, loading, error, registrarAmbulancia }),
+    [ambulancias, loading, error, registrarAmbulancia],
   );
 
   return <AmbulanciaContext.Provider value={value}>{children}</AmbulanciaContext.Provider>;

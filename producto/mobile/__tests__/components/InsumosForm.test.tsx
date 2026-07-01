@@ -15,13 +15,43 @@ const mockUseInventario = useInventario as jest.Mock;
 const mockUseDespachos = useDespachos as jest.Mock;
 
 const insumos = [
-  { id: '1', nombre: 'Paracetamol', categoria: 'Analgésicos', cantidad: 500, unidadMedida: 'mg', ambulanciaPatente: 'AMB-001', ambulanciaId: 1, stock: 10 },
-  { id: '2', nombre: 'Suero fisiológico', categoria: 'Soluciones IV', cantidad: 500, unidadMedida: 'ml', ambulanciaPatente: 'AMB-001', ambulanciaId: 1, stock: 6 },
-  { id: '3', nombre: 'Paracetamol (otra ambulancia)', categoria: 'Analgésicos', cantidad: 500, unidadMedida: 'mg', ambulanciaPatente: 'AMB-002', ambulanciaId: 2, stock: 4 },
+  {
+    id: '1',
+    nombre: 'Paracetamol',
+    categoria: 'Analgésicos',
+    cantidad: 500,
+    unidadMedida: 'mg',
+    ambulanciaPatente: 'AMB-001',
+    ambulanciaId: 1,
+    stock: 10,
+  },
+  {
+    id: '2',
+    nombre: 'Suero fisiológico',
+    categoria: 'Soluciones IV',
+    cantidad: 500,
+    unidadMedida: 'ml',
+    ambulanciaPatente: 'AMB-001',
+    ambulanciaId: 1,
+    stock: 6,
+  },
+  {
+    id: '3',
+    nombre: 'Paracetamol (otra ambulancia)',
+    categoria: 'Analgésicos',
+    cantidad: 500,
+    unidadMedida: 'mg',
+    ambulanciaPatente: 'AMB-002',
+    ambulanciaId: 2,
+    stock: 4,
+  },
 ];
 
 function Harness() {
-  const { control, formState: { errors } } = useForm<FormUsuario>({
+  const {
+    control,
+    formState: { errors },
+  } = useForm<FormUsuario>({
     defaultValues: { insumosUtilizados: [] } as any,
   });
   return <InsumosForm control={control} errors={errors} />;
@@ -36,14 +66,20 @@ beforeEach(() => {
 describe('InsumosForm', () => {
   it('filters by name, scoped to the active despacho ambulancia', () => {
     render(<Harness />);
-    fireEvent.changeText(screen.getByPlaceholderText('Escriba el nombre del insumo...'), 'paracetamol');
+    fireEvent.changeText(
+      screen.getByPlaceholderText('Escriba el nombre del insumo...'),
+      'paracetamol',
+    );
     expect(screen.getByText('Paracetamol')).toBeTruthy();
     expect(screen.queryByText('Paracetamol (otra ambulancia)')).toBeNull();
   });
 
   it('shows no results message when nothing matches', () => {
     render(<Harness />);
-    fireEvent.changeText(screen.getByPlaceholderText('Escriba el nombre del insumo...'), 'inexistente');
+    fireEvent.changeText(
+      screen.getByPlaceholderText('Escriba el nombre del insumo...'),
+      'inexistente',
+    );
     expect(screen.getByText(/Sin resultados/)).toBeTruthy();
   });
 
@@ -63,7 +99,10 @@ describe('InsumosForm', () => {
   describe('DosisInput', () => {
     it('strips non-numeric characters as they are typed', () => {
       render(<Harness />);
-      fireEvent.changeText(screen.getByPlaceholderText('Escriba el nombre del insumo...'), 'paracetamol');
+      fireEvent.changeText(
+        screen.getByPlaceholderText('Escriba el nombre del insumo...'),
+        'paracetamol',
+      );
       fireEvent.press(screen.getByText('Paracetamol'));
 
       const dosisInput = screen.getByDisplayValue('1');
@@ -73,7 +112,10 @@ describe('InsumosForm', () => {
 
     it('resets to 1 on blur when left empty or below 1', () => {
       render(<Harness />);
-      fireEvent.changeText(screen.getByPlaceholderText('Escriba el nombre del insumo...'), 'paracetamol');
+      fireEvent.changeText(
+        screen.getByPlaceholderText('Escriba el nombre del insumo...'),
+        'paracetamol',
+      );
       fireEvent.press(screen.getByText('Paracetamol'));
 
       const dosisInput = screen.getByDisplayValue('1');

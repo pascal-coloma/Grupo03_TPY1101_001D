@@ -2,7 +2,6 @@
 
 # dependencies
 node_modules/
-coverage/
 
 # Expo
 .expo/
@@ -43,8 +42,17 @@ GoogleService-Info.plist
 # typescript
 *.tsbuildinfo
 
+# test coverage
+/coverage
+
+# internal docs
+/docs
+
 app-example
 
 # generated native folders
 /ios
 /android
+
+.watchmanconfig
+
