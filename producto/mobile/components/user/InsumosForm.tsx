@@ -1,5 +1,6 @@
 import { Controller, Control, FieldErrors, useFieldArray } from 'react-hook-form';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import AppTextInput from '@/components/AppTextInput';
 import { useEffect, useState } from 'react';
 import { FormUsuario } from '@/data/types';
 import { useInventario } from '@/context/InventoryContext';
@@ -40,7 +41,7 @@ const DosisInput = ({ value, onChange, hasError }: DosisInputProps) => {
 
   return (
     <View>
-      <TextInput
+      <AppTextInput
         style={[local.cantidadInput, hasError && local.cantidadInputError]}
         keyboardType="numeric"
         value={texto}
@@ -86,7 +87,7 @@ const InsumosForm = ({ control, errors }: InsumosProps) => {
       </View>
 
       <Text style={local.label}>Buscar insumo</Text>
-      <TextInput
+      <AppTextInput
         style={local.input}
         placeholder="Escriba el nombre del insumo..."
         value={busqueda}
@@ -96,7 +97,7 @@ const InsumosForm = ({ control, errors }: InsumosProps) => {
       {busqueda.trim().length > 0 && (
         <View style={local.resultados}>
           {insumosFiltrados.length === 0 ? (
-            <Text style={local.sinResultados}>Sin resultados para `&quot;`{busqueda}`&ldquo`</Text>
+            <Text style={local.sinResultados}>Sin resultados para &quot;{busqueda}&quot;</Text>
           ) : (
             insumosFiltrados.map((insumo, i) => (
               <TouchableOpacity
@@ -157,15 +158,27 @@ const InsumosForm = ({ control, errors }: InsumosProps) => {
                 <Controller
                   control={control}
                   name={`insumosUtilizados.${index}.observaciones`}
+                  rules={{ required: true }}
                   render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      style={local.observacionesInput}
-                      placeholder="Observaciones (opcional)"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      maxLength={255}
-                    />
+                    <>
+                      <AppTextInput
+                        style={[
+                          local.observacionesInput,
+                          !!errors.insumosUtilizados?.[index]?.observaciones &&
+                            local.cantidadInputError,
+                        ]}
+                        placeholder="Observaciones"
+                        value={value}
+                        onChangeText={onChange}
+                        onBlur={onBlur}
+                        maxLength={255}
+                      />
+                      {!!errors.insumosUtilizados?.[index]?.observaciones && (
+                        <Text style={[local.errorText, local.observacionesErrorText]}>
+                          Las observaciones son obligatorias
+                        </Text>
+                      )}
+                    </>
                   )}
                 />
               </View>
@@ -264,6 +277,12 @@ const local = StyleSheet.create({
   removeBtn: { padding: 4 },
   cantidadInputError: { borderColor: '#E53935' },
   errorText: { fontSize: 11, color: '#E53935', textAlign: 'center' },
+  observacionesErrorText: {
+    textAlign: 'left',
+    marginHorizontal: 12,
+    marginTop: -6,
+    marginBottom: 8,
+  },
 });
 
 export default InsumosForm;

@@ -17,7 +17,10 @@ const mockNavigate = jest.fn();
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockUseAuth.mockReturnValue({ login: mockLogin, setPendingCredentials: mockSetPendingCredentials });
+  mockUseAuth.mockReturnValue({
+    login: mockLogin,
+    setPendingCredentials: mockSetPendingCredentials,
+  });
   mockUseRouter.mockReturnValue({ push: mockPush, navigate: mockNavigate });
 });
 

@@ -28,7 +28,13 @@
       "Bash(curl -s -A \"ims-ambulancias-app-test\" \"https://nominatim.openstreetmap.org/search?q=Yerbas+Buenas+710%2C+Valparaiso&format=jsonv2&addressdetails=1&countrycodes=cl&limit=5\")",
       "Bash(python3 -m json.tool)",
       "Bash(curl -s -A \"ims-ambulancias-app-test\" \"https://nominatim.openstreetmap.org/search?street=Yerbas+Buenas+710&city=Valparaiso&format=jsonv2&addressdetails=1&countrycodes=cl&limit=5\")",
-      "Bash(xargs -I{} sh -c 'echo \"== {} ==\"; cat {}')"
+      "Bash(xargs -I{} sh -c 'echo \"== {} ==\"; cat {}')",
+      "Bash(npm view *)",
+      "Bash(python3 -c ' *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('app.json'\\)\\); print\\(json.dumps\\(d,indent=2\\)\\)\")",
+      "Bash(python3 *)"
     ]
   }
 }

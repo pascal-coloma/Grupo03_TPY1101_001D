@@ -40,7 +40,9 @@ beforeEach(() => {
 
 describe('FormPaciente (user)', () => {
   it('leaves fields editable and empty when the despacho has no paciente', () => {
-    mockUseDespachos.mockReturnValue({ despachoActivo: { direccionOrigen: 'Calle 1', direccionDestino: 'Hospital X' } });
+    mockUseDespachos.mockReturnValue({
+      despachoActivo: { direccionOrigen: 'Calle 1', direccionDestino: 'Hospital X' },
+    });
     render(<Harness />);
     expect(screen.queryByText('Datos cargados desde el despacho activo')).toBeNull();
     expect(screen.getByPlaceholderText('Ingrese primer nombre').props.value).toBe('');
@@ -65,7 +67,9 @@ describe('FormPaciente (user)', () => {
   });
 
   it('always disables direccionDestino and syncs it from the despacho activo', () => {
-    mockUseDespachos.mockReturnValue({ despachoActivo: { direccionOrigen: 'Calle 1', direccionDestino: 'Hospital X' } });
+    mockUseDespachos.mockReturnValue({
+      despachoActivo: { direccionOrigen: 'Calle 1', direccionDestino: 'Hospital X' },
+    });
     render(<Harness />);
     const destino = screen.getByPlaceholderText('Ingrese dirección de destino');
     expect(destino.props.editable).toBe(false);
@@ -73,7 +77,9 @@ describe('FormPaciente (user)', () => {
   });
 
   it('formats the rut as the user types when there is no paciente preloaded', () => {
-    mockUseDespachos.mockReturnValue({ despachoActivo: { direccionOrigen: '', direccionDestino: '' } });
+    mockUseDespachos.mockReturnValue({
+      despachoActivo: { direccionOrigen: '', direccionDestino: '' },
+    });
     render(<Harness />);
     const rutInput = screen.getByPlaceholderText('12.345.678-9');
     fireEvent.changeText(rutInput, '123456789');

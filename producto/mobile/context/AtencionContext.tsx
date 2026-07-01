@@ -46,10 +46,29 @@ export const AtencionProvider = ({ children }: { children: ReactNode }) => {
       const horaAISO = (hora: string) => {
         const hhmm = formatearHora(hora);
         const fecha = atencion.fechaRegistro.split('T')[0];
-        return `${fecha}T${hhmm.slice(0, 2)}:${hhmm.slice(2, 4)}:00`;
+        // new Date(...) sin offset se interpreta en hora local; toISOString() la
+        // convierte a UTC real para que el backend no la desplace al guardarla.
+        return new Date(`${fecha}T${hhmm.slice(0, 2)}:${hhmm.slice(2, 4)}:00`).toISOString();
       };
 
+      const paciente = atencion.paciente;
       const payload = {
+        paciente: {
+          rut: paciente.rut,
+          nombre_completo: [
+            paciente.primerNombre,
+            paciente.segundoNombre ?? '',
+            paciente.apellidoPaterno,
+            paciente.apellidoMaterno,
+          ]
+            .filter(Boolean)
+            .join(' '),
+          fecha_nacimiento: paciente.fechaNacimiento,
+          direccion: paciente.direccionOrigen,
+          condicion_paciente: paciente.condicionPaciente,
+          telefono: (paciente.telefono ?? '').replace(/\s/g, '').slice(0, 12),
+          comuna: paciente.comuna ?? '',
+        },
         despacho: {
           despacho_id: Number(atencion.despachoId),
           ambulancia_id: Number(ambulanciaId),
@@ -90,7 +109,7 @@ export const AtencionProvider = ({ children }: { children: ReactNode }) => {
         })),
         rut_receptor: atencion.rutReceptor,
       };
-
+      console.log(payload);
       const atencionResp = await fetchConSesion('/ims/api/atenciones/add/', {
         method: 'POST',
         body: JSON.stringify(payload),
