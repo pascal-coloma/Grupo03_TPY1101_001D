@@ -39,16 +39,17 @@ export function PatientLookupOrRegister({
     queryFn: getPacientes,
   });
 
-  const options = useMemo(
-    () =>
-      (pacientes.data ?? []).map((p) => ({
-        value: formatRut(p.rut),
-        label: p.nombre_completo
-          ? `${formatRut(p.rut)} — ${p.nombre_completo}`
-          : formatRut(p.rut),
-      })),
-    [pacientes.data],
-  );
+  const options = useMemo(() => {
+    const seen = new Map<string, { value: string; label: string }>();
+    for (const p of pacientes.data ?? []) {
+      const value = formatRut(p.rut);
+      seen.set(value, {
+        value,
+        label: p.nombre_completo ? `${value} — ${p.nombre_completo}` : value,
+      });
+    }
+    return Array.from(seen.values());
+  }, [pacientes.data]);
 
   const lookup = useMutation({
     mutationFn: (lookupRut: string) => getPaciente(lookupRut),
@@ -80,14 +81,18 @@ export function PatientLookupOrRegister({
     },
   });
 
-  const backendRut = rut.replace(/\./g, "");
+  // El backend guarda el RUT con puntos y guión (formatRut), así que se
+  // busca con ese mismo formato, pero espera el dígito verificador "k" en
+  // minúscula.
+  const backendRut = rut;
+  const searchRut = backendRut.replace(/K$/, "k");
 
   function handleSearch() {
-    lookup.mutate(backendRut);
+    lookup.mutate(searchRut);
   }
 
   useEffect(() => {
-    if (RUT_FORMAT.test(backendRut)) handleSearch();
+    if (RUT_FORMAT.test(backendRut.replace(/\./g, ""))) handleSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backendRut]);
 
